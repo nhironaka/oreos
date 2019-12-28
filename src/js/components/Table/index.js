@@ -22,7 +22,7 @@ function Table({ columns, rows, classes }) {
         <TableRow>
           {columns.map(column => (
             <TableCell key={column.id} align={column.align}>
-              {column.title}
+              {column.label}
             </TableCell>
           ))}
         </TableRow>

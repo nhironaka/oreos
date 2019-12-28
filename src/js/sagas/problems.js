@@ -33,7 +33,20 @@ function* updateProblem({ problem }) {
   }
 }
 
+function* addProblem({ problem }) {
+  try {
+    const { rows } = yield call(apiRequest.POST, `/problem`, problem);
+    const problems = yield select(selectProblems);
+    problems.push(rows[0]);
+
+    yield all([put(fetchProblemsSuccess(problems)), put(selectProblem(rows[0]))]);
+  } catch (error) {
+    yield put(setError(error, 'problems'));
+  }
+}
+
 export default function* initWatching() {
   yield takeLatest(ActionTypes.FETCH_PROBLEMS, fetchProblems);
   yield takeLatest(ActionTypes.UPDATE_PROBLEM, updateProblem);
+  yield takeLatest(ActionTypes.ADD_PROBLEM, addProblem);
 }

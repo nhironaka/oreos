@@ -5,6 +5,11 @@ export default createMuiTheme({
   typography: {
     useNextVariants: true,
   },
+  palette: {
+    border: {
+      main: blueGrey[100],
+    },
+  },
   mixins: {
     border: (borderWidth = 0.5, borderColor = blueGrey[100]) => `${borderWidth}px solid ${borderColor}`,
   },

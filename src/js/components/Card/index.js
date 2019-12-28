@@ -1,14 +1,16 @@
 import React from 'react';
 import classNames from 'classnames';
 import T from 'prop-types';
+import lightBlue from '@material-ui/core/colors/lightBlue';
 import { withStyles } from '@material-ui/core/styles';
 
 import _T from 'Services/custom-prop-types';
+import theme from '../../constants/theme'
 
-const styles = theme => ({
+console.log(theme.palette.getContrastText(lightBlue[50]));
+
+const styles = () => ({
   root: {
-    backgroundColor: theme.palette.common.white,
-    border: theme.mixins.border(),
     boxSizing: 'border-box',
     display: 'inline-flex',
     flexDirection: 'column',
@@ -49,8 +51,15 @@ const styles = theme => ({
     borderColor: theme.palette.error.dark,
     background: theme.palette.error.light,
   },
-  colorPrimary: { backgroundColor: '#FFEFEE', borderColor: theme.palette.primary.main },
-  colorDefault: { backgroundColor: '#FCFCFC' },
+  colorPrimary: {
+    backgroundColor: theme.palette.primary.light,
+    color: theme.palette.primary.contrastText,
+    borderColor: theme.palette.primary.main,
+  },
+  colorDefault: {
+    backgroundColor: theme.palette.common.white,
+    borderColor: theme.palette.border.main,
+  },
   colorSecondary: { backgroundColor: theme.palette.secondary.light },
   colorDisabled: {
     backgroundColor: theme.palette.action.disabledBackground,
@@ -107,6 +116,8 @@ function Card({ radius, Component, noBorder, children, className, hover, color, 
 
 Card.defaultProps = {
   Component: 'div',
+  padding: 'none',
+  color: 'default',
   className: '',
   disabled: false,
   noBorder: false,

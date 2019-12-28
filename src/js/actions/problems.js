@@ -27,10 +27,17 @@ export function updateProblem(problem) {
   };
 }
 
+export function addProblem(problem) {
+  return {
+    type: ActionTypes.ADD_PROBLEM,
+    problem,
+  };
+}
+
 export function updateProblemInput(problem, input) {
   return {
     type: ActionTypes.UPDATE_PROBLEM_INPUT,
     problem,
-    input
+    input,
   };
 }

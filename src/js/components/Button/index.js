@@ -5,13 +5,10 @@ import MuiButton from '@material-ui/core/Button';
 
 import _T from 'Services/custom-prop-types';
 
-const styles = theme => ({
+const styles = () => ({
   root: {},
   text: {
     textTransform: 'none',
-    '&:hover': {
-      backgroundColor: theme.palette.common.white,
-    },
     '& $label': {
       display: 'inline-flex',
       flexDirection: 'column',
@@ -27,7 +24,7 @@ function Button({ variant, onClick, disableRipple, classes, ...rest }) {
       variant={variant}
       onClick={onClick}
       disableRipple={disableRipple}
-      classes={{ text: classes.text, label: classes.label }}
+      classes={{ root: classes.root, text: classes.text, label: classes.label }}
       {...rest}
     />
   );

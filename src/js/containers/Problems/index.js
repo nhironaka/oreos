@@ -13,11 +13,14 @@ import Typography from 'Components/Typography';
 import Card from 'Components/Card';
 import Loading from 'Components/Loading';
 import Problem from '../Problem';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import get from 'lodash/get';
 
 const styles = theme => ({
   root: {},
   unorderedList: {
     '& > li > button': {
+      width: '100%',
       borderBottom: theme.mixins.border(),
     },
   },
@@ -31,7 +34,7 @@ class Problems extends React.Component {
     super(props);
     this.columns = [
       {
-        title: 'Title',
+        label: 'Title',
         id: 'title',
         type: {
           id: 'link',
@@ -43,7 +46,7 @@ class Problems extends React.Component {
         },
       },
       {
-        title: 'Question',
+        label: 'Question',
         id: 'question',
       },
     ];
@@ -55,6 +58,7 @@ class Problems extends React.Component {
 
   render() {
     const { loading, problems, selectedProblem, classes } = this.props;
+    const selectedProblemId = get(selectedProblem, 'id');
 
     return (
       <Grid alignItems="stretch" classes={{ root: classes.root }} container>
@@ -65,17 +69,33 @@ class Problems extends React.Component {
             <UnorderedList classes={{ root: classes.unorderedList }}>
               {problems.map(problem => (
                 <li key={problem.id}>
-                  <Card Component="button" padding="md" onClick={() => this.props.selectProblem(problem)} noBorder>
-                    <Typography variant="subtitle1">{problem.title}</Typography>
-                    <Typography>{problem.question}</Typography>
+                  <Card
+                    Component="button"
+                    padding="md"
+                    color={problem.id === selectedProblemId ? 'primary' : 'default'}
+                    onClick={() => this.props.selectProblem(problem)}
+                    noBorder
+                  >
+                    <Typography color="inherit" variant="subtitle1">
+                      {problem.title}
+                    </Typography>
+                    <Typography color="inherit">{problem.question}</Typography>
                   </Card>
                 </li>
               ))}
+              <li>
+                <Card Component="button" padding="md" onClick={() => this.props.selectProblem({})} noBorder>
+                  <Typography variant="subtitle1">
+                    Add problem
+                    <FontAwesomeIcon icon="plus" />
+                  </Typography>
+                </Card>
+              </li>
             </UnorderedList>
           )}
         </Grid>
         <Grid classes={{ root: classes.problemWrapper }} item>
-          {selectedProblem && <Problem problem={selectedProblem} />}
+          {selectedProblem && <Problem problem={selectedProblem} key={selectProblem.id} />}
         </Grid>
       </Grid>
     );

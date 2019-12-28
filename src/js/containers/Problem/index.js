@@ -13,19 +13,44 @@ import { createStructuredSelector } from 'reselect';
 import _T from 'Services/custom-prop-types';
 import { selectProblemInput } from 'Selectors/problems';
 import { getError } from 'Reducers/errors';
-import { updateProblem, updateProblemInput } from 'Actions/problems';
+import { updateProblem, updateProblemInput, addProblem } from 'Actions/problems';
 import Typography from 'Components/Typography';
-import TextField from 'Components/TextField';
+import InputField from 'Components/InputField';
+import InlineInput from 'Components/InlineInput';
 import Card from 'Components/Card';
+import NavButtonGroup from 'Components/NavButtonGroup';
+import Button from 'Components/Button';
+import solver from './solver';
 
-const style = () => ({
+const style = theme => ({
   root: {
-    borderRight: 'none',
-    borderTop: 'none',
+    borderLeft: theme.mixins.border(),
+  },
+  card: {
     width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+  body: {
+    borderBottom: theme.mixins.border(),
   },
   solution: {
     flex: 1,
+  },
+  navButtonGroup: {
+    display: 'flex',
+    width: '100%',
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    borderBottom: theme.mixins.border(),
+    '& > button': {
+      borderColor: theme.palette.border.main,
+      borderTopColor: 'transparent',
+      '&:first-child': {
+        borderLeftColor: 'transparent',
+      },
+    },
   },
 });
 
@@ -38,6 +63,32 @@ class Problem extends React.Component {
     }
   });
 
+  static PROBLEM_STATUS = [
+    {
+      id: 'attempted',
+      label: 'Attempted',
+    },
+    {
+      id: 'solved',
+      label: 'Solved',
+    },
+  ];
+
+  static getDerivedStateFromProps(props, state) {
+    if (state.prevProblemId !== props.problem.id) {
+      return {
+        prevProblemId: props.problem.id,
+        solution: get(props, 'problem.solution', `function ${camelCase(get(props, 'problem.name', ''))}() {}`),
+        parsed: null,
+        answer: '',
+        error: null,
+        prevKey: null,
+      };
+    }
+
+    return null;
+  }
+
   constructor(props) {
     super(props);
 
@@ -45,11 +96,7 @@ class Problem extends React.Component {
     this.updateProblem = debounce(this.props.updateProblem, 500);
     this.parseSolutionDebounced = debounce(this.parseSolutionDebounced.bind(this), 250);
     this.state = {
-      solution: get(this.props, 'problem.solution', `function ${camelCase(get(this.props, 'problem.name', ''))}() {}`),
-      parsed: null,
-      answer: null,
-      error: null,
-      prevKey: null,
+      prevProblemId: '',
     };
   }
 
@@ -73,7 +120,15 @@ class Problem extends React.Component {
       target: { selectionStart, value },
     } = e;
     const { prevKey } = this.state;
-    if (key === 'enter' && prevKey === '{') {
+
+    if (key.toLowerCase() === 'tab') {
+      e.preventDefault();
+      this.updateProblem({
+        id,
+        solution: `${value.slice(0, selectionStart)}    ${value.slice(selectionStart)}`,
+      });
+    }
+    if (key.toLowerCase() === 'enter' && prevKey === '{') {
       this.updateProblem({
         id,
         solution: `${value.slice(0, selectionStart)}\n    ${value.slice(selectionStart)}`,
@@ -85,6 +140,16 @@ class Problem extends React.Component {
       });
     }
   }
+
+  updateProblemTitle = title => {
+    const {
+      problem: { id },
+    } = this.props;
+    this.updateProblem({
+      id,
+      title,
+    });
+  };
 
   parseSolution = e => {
     e.preventDefault();
@@ -108,21 +173,18 @@ class Problem extends React.Component {
       const parsed = new Function(
         'input',
         `
-          ${value};
-          console.log(${functionName}(input));
+          ${value}
           return JSON.stringify(${functionName}(input));
         `
       );
 
       try {
         this.setState({
-          parsed,
           answer: input && parsed(Problem.parseInput(input)),
           error: null,
         });
       } catch (e) {
         this.setState({
-          parsed,
           answer: null,
           error: getError(e),
         });
@@ -142,12 +204,16 @@ class Problem extends React.Component {
     const {
       target: { value },
     } = e;
-    const { parsed } = this.state;
 
     this.props.updateProblemInput(name, value);
+    this.solve(e.target.value);
+  };
+
+  solve = value => {
+    const { input } = this.props;
     try {
       this.setState({
-        answer: parsed(Problem.parseInput(e.target.value)),
+        answer: solver(Problem.parseInput(value || input)),
         error: null,
       });
     } catch (error) {
@@ -158,40 +224,98 @@ class Problem extends React.Component {
     }
   };
 
+  toggleStatus = (_e, { id: status }) => {
+    const {
+      problem: { id },
+    } = this.props;
+
+    this.props.updateProblem({
+      id,
+      status,
+    });
+  };
+
+  saveProblem = () => {
+    const { problem } = this.props;
+    if (problem.id) {
+      this.props.updateProblem(problem);
+    } else {
+      this.props.addProblem(problem);
+    }
+  };
+
   render() {
     const { problem, input, classes } = this.props;
     const { solution, answer, error } = this.state;
 
     return (
-      <Card padding="md" classes={{ root: classes.root }}>
-        <Grid justify="space-between" alignItems="baseline" container>
-          <Grid item>
-            <Typography>{problem.title}</Typography>
-            <Typography>{problem.question}</Typography>
+      <Card className={classes.root} classes={{ root: classes.card }} noBorder>
+        <NavButtonGroup
+          variant="outlined"
+          selected={problem.status}
+          options={Problem.PROBLEM_STATUS}
+          onClick={this.toggleStatus}
+          classes={{ root: classes.navButtonGroup }}
+        />
+        <Card padding="md" className={classes.body} classes={{ root: classes.card }} noBorder>
+          <Grid direction="column" spacing={2} container>
+            <Grid item>
+              <Grid justify="space-between" alignItems="baseline" container>
+                <Grid item>
+                  <InlineInput onSave={this.updateProblemTitle} value={problem.title} />
+                  {/* <Typography variant="h6">{problem.title}</Typography> */}
+                  <Typography>{problem.question}</Typography>
+                </Grid>
+                {problem.last_updated && (
+                  <Grid item>
+                    <Typography variant="caption">
+                      {`Last updated: ${moment(problem.last_updated).format('MM/DD/YYYY hh:mm:ssA')}`}
+                    </Typography>
+                  </Grid>
+                )}
+              </Grid>
+            </Grid>
+            <Grid item>
+              <InputField
+                rows={9}
+                value={solution}
+                onChange={this.parseSolution}
+                inputRef={this.inputRef}
+                FormControlProps={{
+                  fullWidth: true,
+                }}
+                multiline
+              />
+            </Grid>
+            <Grid item>
+              <Grid spacing={2} container>
+                <Grid item>
+                  <InputField value={input} onChange={this.evaluateInput} />
+                </Grid>
+                <Grid classes={{ item: classes.solution }} item>
+                  <InputField value={answer} readOnly />
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item>
+              <Grid justify="space-between" alignItems="baseline" container>
+                <Grid item>{error && <Typography color="error">{error}</Typography>}</Grid>
+                <Grid item>
+                  <Grid spacing={2} container>
+                    <Grid item>
+                      <Button onClick={() => this.solve()}>Solve</Button>
+                    </Grid>
+                    <Grid item>
+                      <Button color="primary" onClick={this.saveProblem}>
+                        Save
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
           </Grid>
-          <Grid item>
-            <Typography variant="caption">
-              {`Last updated: ${moment(problem.lastUpdated).format('MM/DD/YYYY hh:mm:ssA')}`}
-            </Typography>
-          </Grid>
-        </Grid>
-        <Grid spacing={2} container>
-          <Grid classes={{ item: classes.solution }} item>
-            <TextField
-              rows={9}
-              value={solution}
-              onChange={this.parseSolution}
-              inputRef={this.inputRef}
-              multiline
-              fullWidth
-            />
-          </Grid>
-          <Grid item>
-            <TextField value={input} onChange={this.evaluateInput} />
-          </Grid>
-        </Grid>
-        {answer}
-        {error && <Typography color="error">{error}</Typography>}
+        </Card>
       </Card>
     );
   }
@@ -205,6 +329,7 @@ Problem.propTypes = {
   input: T.any,
   problem: T.object.isRequired,
   updateProblem: T.func.isRequired,
+  addProblem: T.func.isRequired,
   updateProblemInput: T.func.isRequired,
   classes: _T.classes.isRequired,
 };
@@ -216,6 +341,7 @@ const mapStateToProps = createStructuredSelector({
 const mapDispatchToProps = {
   updateProblem,
   updateProblemInput,
+  addProblem,
 };
 
 export default withStyles(style)(connect(mapStateToProps, mapDispatchToProps)(Problem));
