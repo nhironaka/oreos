@@ -10,6 +10,9 @@ const styles = theme => ({
     backgroundColor: theme.palette.common.white,
     border: theme.mixins.border(),
     boxSizing: 'border-box',
+    display: 'inline-flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
   },
   noPadding: {
     padding: 0,

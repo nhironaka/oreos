@@ -13,9 +13,23 @@ export function fetchProblems() {
   };
 }
 
+export function selectProblem(problem) {
+  return {
+    type: ActionTypes.SELECT_PROBLEM,
+    problem,
+  };
+}
+
 export function updateProblem(problem) {
   return {
     type: ActionTypes.UPDATE_PROBLEM,
+    problem,
+  };
+}
+
+export function updateProblemSuccess(problem) {
+  return {
+    type: ActionTypes.UPDATE_PROBLEM_SUCCESS,
     problem,
   };
 }

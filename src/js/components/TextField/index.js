@@ -7,8 +7,8 @@ const styles = () => ({
   root: {
     margin: 0,
     padding: 0,
-    listStyle: 'none'
-  }
+    listStyle: 'none',
+  },
 });
 
 function TextField({ variant, value, onChange, ...rest }) {
@@ -16,13 +16,13 @@ function TextField({ variant, value, onChange, ...rest }) {
 }
 
 TextField.defaultProps = {
-  variant: 'outlined'
+  variant: 'outlined',
 };
 
 TextField.propTypes = {
   variant: T.oneOf(['standard', 'outlined', 'filled']),
   value: T.any.isRequired,
-  onChange: T.func.isRequired
+  onChange: T.func.isRequired,
 };
 
 export default withStyles(styles)(TextField);

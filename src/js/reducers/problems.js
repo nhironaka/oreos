@@ -5,6 +5,7 @@ import ActionTypes from '../constants/problems';
 const initialState = {
   problems: [],
   fetchingProblems: false,
+  selectedProblem: null,
 };
 
 /**
@@ -16,6 +17,11 @@ export default function reducer(state = initialState, action) {
       return {
         ...state,
         fetchingProblems: true,
+      };
+    case ActionTypes.SELECT_PROBLEM:
+      return {
+        ...state,
+        selectedProblem: action.problem,
       };
     case ActionTypes.FETCH_PROBLEMS_SUCCESS:
       return {

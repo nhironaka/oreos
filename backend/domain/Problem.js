@@ -22,13 +22,13 @@ function getProblemByIdSQL(id) {
   return `SELECT * FROM PROBLEM WHERE ID=${id}`;
 }
 
-function updateProblemByIdSQL(problem) {
+function updateProblemByIdSQL(id, problem) {
   const sql = [`UPDATE PROBLEM SET`];
   if (problem.question) {
-    sql.push(`question=${problem.question},`);
+    sql.push(`question='${problem.question}',`);
   }
   if (problem.solution) {
-    sql.push(`solution=${problem.solution},`);
+    sql.push(`solution='${problem.solution}',`);
   }
   if (problem.status) {
     if (!STATUSES[problem.status]) {
@@ -36,13 +36,13 @@ function updateProblemByIdSQL(problem) {
         `Problem status must be one of ${STATUSES.ATTEMPTED}, ${STATUSES.SOLVED}. You entered - ${problem.status}`
       );
     }
-    sql.push(`status=${problem.status},`);
+    sql.push(`status='${problem.status}',`);
   }
   if (sql.length < 2) {
     throw new Error('Unable to update problem. Invalid fields.');
   }
+  sql.push(`last_updated='${moment().format('YYYY-MM-DD HH:mm:ss')}' WHERE ID=${id} RETURNING *;`);
 
-  sql.push(`last_updated=${moment().format('YYYY-MM-DD HH:mm:ss')}`);
   return sql.join(' ');
 }
 

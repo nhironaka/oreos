@@ -22,6 +22,7 @@
     "react/destructuring-assignment": "off",
     "react/jsx-props-no-spreading": "off",
     "react/forbid-prop-types": "off",
-    "import/extensions": "off"
+    "import/extensions": "off",
+    "no-plusplus": "off"
   }
 }

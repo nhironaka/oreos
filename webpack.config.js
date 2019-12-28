@@ -53,6 +53,9 @@ module.exports = {
     alias: {
       Components: path.resolve(__dirname, 'src/js/components/'),
       Services: path.resolve(__dirname, 'src/js/services/'),
+      Actions: path.resolve(__dirname, 'src/js/actions/'),
+      Selectors: path.resolve(__dirname, 'src/js/selectors/'),
+      Reducers: path.resolve(__dirname, 'src/js/reducers/'),
     },
   },
   devServer: {

@@ -5,7 +5,7 @@ const Problem = require('../domain/Problem');
 const router = express.Router();
 
 // Handles url GET:/problems
-router.get('/', (req, res, next) => {
+router.get('/', (req, res) => {
   db.query(Problem.getAllProblemsSQL(), (err, data) => {
     if (err) {
       res.status(500).json({
@@ -19,15 +19,38 @@ router.get('/', (req, res, next) => {
   });
 });
 
-// Handles url POST:/problems/add
-router.post('/', (req, res, next) => {
-  const { name, question, status, solution } = req.params;
+// Handles url POST:/problems/:id
+router.post('/:problemId', (req, res) => {
+  const { problemId } = req.params;
+
+  db.query(Problem.updateProblemByIdSQL(problemId, req.body), (err, data) => {
+    if (err) {
+      res.status(500).json({
+        err,
+      });
+    } else {
+      res.status(200).json({
+        data,
+      });
+    }
+  });
+});
+
+// Handles url POST:/problems/:id
+router.post('/', (req, res) => {
+  const { name, question, status, solution } = req.body;
   const problem = new Problem(name, question, status, solution);
 
-  db.query(problem.getAddProblemSQL(), (err, data) => {
-    res.status(200).json({
-      data,
-    });
+  db.query(problem.getAddProblemSQL(problem), (err, data) => {
+    if (err) {
+      res.status(500).json({
+        err,
+      });
+    } else {
+      res.status(200).json({
+        data,
+      });
+    }
   });
 });
 
