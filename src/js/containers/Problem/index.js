@@ -3,18 +3,20 @@ import T from 'prop-types';
 import moment from 'moment';
 import get from 'lodash/get';
 import camelCase from 'lodash/camelCase';
+import memoize from 'lodash/memoize';
 import debounce from 'lodash/debounce';
 import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
 
 import _T from 'Services/custom-prop-types';
+import { selectProblemInput } from 'Selectors/problems';
 import { getError } from 'Reducers/errors';
-import { updateProblem } from 'Actions/problems';
+import { updateProblem, updateProblemInput } from 'Actions/problems';
 import Typography from 'Components/Typography';
 import TextField from 'Components/TextField';
 import Card from 'Components/Card';
-import solver from './service';
 
 const style = () => ({
   root: {
@@ -28,49 +30,100 @@ const style = () => ({
 });
 
 class Problem extends React.Component {
+  static parseInput = memoize(input => {
+    try {
+      return JSON.parse(input);
+    } catch (e) {
+      return input;
+    }
+  });
+
   constructor(props) {
     super(props);
-    const { problem } = props;
+
+    this.inputRef = React.createRef();
+    this.updateProblem = debounce(this.props.updateProblem, 500);
+    this.parseSolutionDebounced = debounce(this.parseSolutionDebounced.bind(this), 250);
     this.state = {
-      solution: get(problem, 'solution', `function ${camelCase(get(problem, 'name', ''))}() {}`),
+      solution: get(this.props, 'problem.solution', `function ${camelCase(get(this.props, 'problem.name', ''))}() {}`),
       parsed: null,
       answer: null,
       error: null,
-      input: '',
+      prevKey: null,
     };
-
-    this.parseSolution = this.parseSolution.bind(this);
-    this.updateProblem = debounce(this.props.updateProblem, 500);
-    this.parseSolutionDebounced = debounce(this.parseSolutionDebounced.bind(this), 250);
-    this.evaluateInputDebounced = debounce(this.evaluateInput.bind(this), 250);
   }
 
-  parseSolution(e) {
+  componentDidMount() {
+    const { solution } = this.state;
+
+    this.inputRef.current.addEventListener('keydown', this.onKeyPress.bind(this));
+    this.parseSolutionDebounced(solution);
+  }
+
+  componentWillUnmount() {
+    this.inputRef.current.removeEventListener('keydown', this.onKeyPress.bind(this));
+  }
+
+  onKeyPress(e) {
+    const {
+      problem: { id },
+    } = this.props;
+    const {
+      key,
+      target: { selectionStart, value },
+    } = e;
+    const { prevKey } = this.state;
+    if (key === 'enter' && prevKey === '{') {
+      this.updateProblem({
+        id,
+        solution: `${value.slice(0, selectionStart)}\n    ${value.slice(selectionStart)}`,
+      });
+    }
+    if (/{|}/.test(key)) {
+      this.setState({
+        prevKey: key,
+      });
+    }
+  }
+
+  parseSolution = e => {
     e.preventDefault();
     this.setState({
       solution: e.target.value,
     });
     this.parseSolutionDebounced(e.target.value);
-  }
+  };
 
   /* eslint-disable no-new-func */
-  parseSolutionDebounced(value) {
+  parseSolutionDebounced = value => {
     const {
       problem: { id },
+      input,
     } = this.props;
-    const { input, solution } = this.state;
-    const matched = value.match(/^\s*\n*function (\w+)\(([^\)]*)\)\s*\n*\{\n*\s*(.*)\n*\s*\}$/s);
+    const { solution } = this.state;
+    const matched = value.match(/^\s*\n*function (\w+)\(([^)]*)\)\s*\n*\{\n*\s*((?!function).*)\n*\s*\}$/s);
 
     if (matched) {
-      const [, functionName, functionParams, body] = matched;
-      const params = functionParams.split(/,\s*/g);
-      const parsed = new Function(...params, body);
+      const [, functionName] = matched;
+      const parsed = new Function(
+        'input',
+        `
+          ${value};
+          console.log(${functionName}(input));
+          return JSON.stringify(${functionName}(input));
+        `
+      );
+
       try {
         this.setState({
-          answer: parsed(input),
+          parsed,
+          answer: input && parsed(Problem.parseInput(input)),
+          error: null,
         });
       } catch (e) {
         this.setState({
+          parsed,
+          answer: null,
           error: getError(e),
         });
       }
@@ -79,22 +132,35 @@ class Problem extends React.Component {
       id,
       solution,
     });
-  }
+  };
   /* eslint-enable */
 
-  evaluateInput(e) {
-    this.setState({
-      solution: e.target.value,
-      answer: solver(JSON.parse(e.target.value)),
-    });
-  }
+  evaluateInput = e => {
+    const {
+      problem: { name },
+    } = this.props;
+    const {
+      target: { value },
+    } = e;
+    const { parsed } = this.state;
+
+    this.props.updateProblemInput(name, value);
+    try {
+      this.setState({
+        answer: parsed(Problem.parseInput(e.target.value)),
+        error: null,
+      });
+    } catch (error) {
+      this.setState({
+        answer: null,
+        error: getError(error),
+      });
+    }
+  };
 
   render() {
-    const { problem, classes } = this.props;
-    const { solution, answer, input, error } = this.state;
-    if (!problem) {
-      return null;
-    }
+    const { problem, input, classes } = this.props;
+    const { solution, answer, error } = this.state;
 
     return (
       <Card padding="md" classes={{ root: classes.root }}>
@@ -111,7 +177,14 @@ class Problem extends React.Component {
         </Grid>
         <Grid spacing={2} container>
           <Grid classes={{ item: classes.solution }} item>
-            <TextField rows={9} value={solution} onChange={this.parseSolution} multiline fullWidth />
+            <TextField
+              rows={9}
+              value={solution}
+              onChange={this.parseSolution}
+              inputRef={this.inputRef}
+              multiline
+              fullWidth
+            />
           </Grid>
           <Grid item>
             <TextField value={input} onChange={this.evaluateInput} />
@@ -124,14 +197,25 @@ class Problem extends React.Component {
   }
 }
 
+Problem.defaultProps = {
+  input: '',
+};
+
 Problem.propTypes = {
-  problem: T.object,
+  input: T.any,
+  problem: T.object.isRequired,
   updateProblem: T.func.isRequired,
+  updateProblemInput: T.func.isRequired,
   classes: _T.classes.isRequired,
 };
 
+const mapStateToProps = createStructuredSelector({
+  input: selectProblemInput,
+});
+
 const mapDispatchToProps = {
   updateProblem,
+  updateProblemInput,
 };
 
-export default withStyles(style)(connect(null, mapDispatchToProps)(Problem));
+export default withStyles(style)(connect(mapStateToProps, mapDispatchToProps)(Problem));

@@ -7,7 +7,7 @@ import rootSaga from '../sagas/app';
 
 export default function configureStore(preloadedState) {
   let initialState = preloadedState;
-  const savedStore = localStorage.getItem('store') && JSON.parse(localStorage.getItem('store') || '');
+  const savedStore = localStorage.getItem('app') && JSON.parse(localStorage.getItem('app') || '');
 
   if (savedStore) {
     initialState = savedStore;
@@ -23,6 +23,10 @@ export default function configureStore(preloadedState) {
   }
 
   sagaMiddleware.run(rootSaga);
+
+  store.subscribe(() => {
+    localStorage.setItem('app', JSON.stringify(store.getState()));
+  });
 
   return store;
 }

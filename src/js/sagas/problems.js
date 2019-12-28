@@ -1,10 +1,10 @@
-import { takeLatest, call, put, select } from 'redux-saga/effects';
+import { takeLatest, call, put, select, all } from 'redux-saga/effects';
 
 import ActionTypes from '../constants/problems';
 import apiRequest from '../services/apiRequest';
 import { setError } from '../reducers/errors';
-import { fetchProblemsSuccess, selectProblem, updateProblemSuccess } from '../actions/problems';
-import { selectSelectedProblem } from '../selectors/problems';
+import { fetchProblemsSuccess, selectProblem } from '../actions/problems';
+import { selectSelectedProblem, selectProblems } from '../selectors/problems';
 
 function* fetchProblems() {
   try {
@@ -23,8 +23,11 @@ function* fetchProblems() {
 function* updateProblem({ problem }) {
   try {
     const { rows } = yield call(apiRequest.POST, `/problem/${problem.id}`, problem);
+    const problems = yield select(selectProblems);
+    const idx = problems.findIndex(item => item.id === problem.id);
+    problems.splice(idx, 1, rows[0]);
 
-    yield put(updateProblemSuccess(rows));
+    yield all([put(fetchProblemsSuccess(problems)), put(selectProblem(rows[0]))]);
   } catch (error) {
     yield put(setError(error, 'problems'));
   }

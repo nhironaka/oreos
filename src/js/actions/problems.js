@@ -27,9 +27,10 @@ export function updateProblem(problem) {
   };
 }
 
-export function updateProblemSuccess(problem) {
+export function updateProblemInput(problem, input) {
   return {
-    type: ActionTypes.UPDATE_PROBLEM_SUCCESS,
+    type: ActionTypes.UPDATE_PROBLEM_INPUT,
     problem,
+    input
   };
 }

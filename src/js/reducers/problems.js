@@ -4,6 +4,7 @@ import ActionTypes from '../constants/problems';
  */
 const initialState = {
   problems: [],
+  inputs: {},
   fetchingProblems: false,
   selectedProblem: null,
 };
@@ -28,6 +29,11 @@ export default function reducer(state = initialState, action) {
         ...state,
         problems: action.problems,
         fetchingProblems: false,
+      };
+    case ActionTypes.UPDATE_PROBLEM_INPUT:
+      return {
+        ...state,
+        inputs: { ...state.inputs, [action.problem]: action.input },
       };
     default:
       return state;

@@ -8,3 +8,7 @@ export const selectProblems = createSelector(selectedProblems, state => get(stat
 export const selectFetchingProblems = createSelector(selectedProblems, state => get(state, 'fetchingProblems'));
 
 export const selectSelectedProblem = createSelector(selectedProblems, state => get(state, 'selectedProblem'));
+
+export const selectProblemInput = createSelector(selectedProblems, selectSelectedProblem, (state, selectedProblem) =>
+  get(state, `inputs.${selectedProblem.name}`)
+);
