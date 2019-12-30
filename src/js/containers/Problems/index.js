@@ -1,6 +1,7 @@
 import React from 'react';
 import T from 'prop-types';
-import Grid from '@material-ui/core/Grid';
+import get from 'lodash/get';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { withStyles } from '@material-ui/core/styles';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
@@ -8,25 +9,49 @@ import { connect } from 'react-redux';
 import _T from 'Services/custom-prop-types';
 import { fetchProblems, selectProblem } from 'Actions/problems';
 import { selectFetchingProblems, selectProblems, selectSelectedProblem } from 'Selectors/problems';
+import Grid from 'Components/Grid';
 import UnorderedList from 'Components/UnorderedList';
 import Typography from 'Components/Typography';
 import Card from 'Components/Card';
 import Loading from 'Components/Loading';
 import Problem from '../Problem';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import get from 'lodash/get';
 
 const styles = theme => ({
   root: {},
+  question: {
+    maxHeight: 48,
+    overflow: 'hidden',
+    position: 'relative',
+    paddingRight: '1em',
+    '&:before': {
+      content: '"..."',
+      width: '2em',
+      textAlign: 'center',
+      position: 'absolute',
+      right: 0,
+      bottom: 0,
+    },
+    '&:after': {
+      content: '""',
+      position: 'absolute',
+      right: 0,
+      width: '2em',
+      height: '1.5em',
+      background: theme.palette.common.white,
+    },
+  },
+  colorPrimary: {
+    '& $question:after': {
+      backgroundColor: theme.palette.primary.light,
+    },
+  },
   unorderedList: {
     '& > li > button': {
       width: '100%',
       borderBottom: theme.mixins.border(),
     },
   },
-  problemWrapper: {
-    flex: 1,
-  },
+  label: {},
 });
 
 class Problems extends React.Component {
@@ -61,8 +86,8 @@ class Problems extends React.Component {
     const selectedProblemId = get(selectedProblem, 'id');
 
     return (
-      <Grid alignItems="stretch" classes={{ root: classes.root }} container>
-        <Grid item>
+      <Grid alignItems="stretch" wrap="nowrap" classes={{ root: classes.root }} container>
+        <Grid xs={3} sm={4} item>
           {loading ? (
             <Loading />
           ) : (
@@ -74,27 +99,39 @@ class Problems extends React.Component {
                     padding="md"
                     color={problem.id === selectedProblemId ? 'primary' : 'default'}
                     onClick={() => this.props.selectProblem(problem)}
+                    classes={{ colorPrimary: classes.colorPrimary }}
                     noBorder
                   >
                     <Typography color="inherit" variant="subtitle1">
                       {problem.title}
                     </Typography>
-                    <Typography color="inherit">{problem.question}</Typography>
+                    <Typography align="left" color="inherit" classes={{ root: classes.question }}>
+                      {problem.question}
+                    </Typography>
                   </Card>
                 </li>
               ))}
               <li>
-                <Card Component="button" padding="md" onClick={() => this.props.selectProblem({})} noBorder>
+                <Card
+                  Component="button"
+                  padding="md"
+                  onClick={() =>
+                    this.props.selectProblem({
+                      status: Problem.PROBLEM_STATUS[0].id,
+                    })
+                  }
+                  noBorder
+                >
                   <Typography variant="subtitle1">
                     Add problem
-                    <FontAwesomeIcon icon="plus" />
+                    <FontAwesomeIcon icon={['far', 'plus']} />
                   </Typography>
                 </Card>
               </li>
             </UnorderedList>
           )}
         </Grid>
-        <Grid classes={{ root: classes.problemWrapper }} item>
+        <Grid xs={9} sm={8} item>
           {selectedProblem && <Problem problem={selectedProblem} key={selectProblem.id} />}
         </Grid>
       </Grid>

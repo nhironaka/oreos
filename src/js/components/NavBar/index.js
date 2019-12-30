@@ -3,8 +3,8 @@ import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 
-import Typography from 'Components/Typography';
 import _T from 'Services/custom-prop-types';
+import Typography from 'Components/Typography';
 
 const styles = theme => ({
   root: {

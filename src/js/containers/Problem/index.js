@@ -3,9 +3,9 @@ import T from 'prop-types';
 import moment from 'moment';
 import get from 'lodash/get';
 import camelCase from 'lodash/camelCase';
+import kebabCase from 'lodash/kebabCase';
 import memoize from 'lodash/memoize';
 import debounce from 'lodash/debounce';
-import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
@@ -14,9 +14,9 @@ import _T from 'Services/custom-prop-types';
 import { selectProblemInput } from 'Selectors/problems';
 import { getError } from 'Reducers/errors';
 import { updateProblem, updateProblemInput, addProblem } from 'Actions/problems';
+import Grid from 'Components/Grid';
 import Typography from 'Components/Typography';
 import InputField from 'Components/InputField';
-import InlineInput from 'Components/InlineInput';
 import Card from 'Components/Card';
 import NavButtonGroup from 'Components/NavButtonGroup';
 import Button from 'Components/Button';
@@ -65,11 +65,11 @@ class Problem extends React.Component {
 
   static PROBLEM_STATUS = [
     {
-      id: 'attempted',
+      id: 'ATTEMPTED',
       label: 'Attempted',
     },
     {
-      id: 'solved',
+      id: 'SOLVED',
       label: 'Solved',
     },
   ];
@@ -83,6 +83,7 @@ class Problem extends React.Component {
         answer: '',
         error: null,
         prevKey: null,
+        updates: {},
       };
     }
 
@@ -93,10 +94,11 @@ class Problem extends React.Component {
     super(props);
 
     this.inputRef = React.createRef();
-    this.updateProblem = debounce(this.props.updateProblem, 500);
+    this.saveProblemDebounced = debounce(this.saveProblem, 500);
     this.parseSolutionDebounced = debounce(this.parseSolutionDebounced.bind(this), 250);
     this.state = {
       prevProblemId: '',
+      updates: {},
     };
   }
 
@@ -123,13 +125,13 @@ class Problem extends React.Component {
 
     if (key.toLowerCase() === 'tab') {
       e.preventDefault();
-      this.updateProblem({
+      this.saveProblemDebounced({
         id,
         solution: `${value.slice(0, selectionStart)}    ${value.slice(selectionStart)}`,
       });
     }
     if (key.toLowerCase() === 'enter' && prevKey === '{') {
-      this.updateProblem({
+      this.saveProblemDebounced({
         id,
         solution: `${value.slice(0, selectionStart)}\n    ${value.slice(selectionStart)}`,
       });
@@ -141,18 +143,25 @@ class Problem extends React.Component {
     }
   }
 
-  updateProblemTitle = title => {
-    const {
-      problem: { id },
-    } = this.props;
-    this.updateProblem({
-      id,
-      title,
-    });
+  updateProblem = (e, value) => {
+    const { problem } = this.props;
+    this.setState(
+      state => ({
+        updates: {
+          ...state.updates,
+          ...problem,
+          [e.target.name]: value,
+        },
+      }),
+      () => {
+        this.saveProblemDebounced(this.state.updates);
+      }
+    );
   };
 
   parseSolution = e => {
     e.preventDefault();
+
     this.setState({
       solution: e.target.value,
     });
@@ -190,7 +199,7 @@ class Problem extends React.Component {
         });
       }
     }
-    this.updateProblem({
+    this.saveProblemDebounced({
       id,
       solution,
     });
@@ -235,12 +244,21 @@ class Problem extends React.Component {
     });
   };
 
-  saveProblem = () => {
+  saveProblem = async () => {
     const { problem } = this.props;
+    const { updates } = this.state;
+    const updated = {
+      ...problem,
+      ...updates,
+    };
+
     if (problem.id) {
-      this.props.updateProblem(problem);
-    } else {
-      this.props.addProblem(problem);
+      this.props.updateProblem(updated);
+    } else if (updated.title && updated.question) {
+      this.props.addProblem({
+        ...updates,
+        name: problem.name || kebabCase(problem.title || updates.title),
+      });
     }
   };
 
@@ -262,21 +280,41 @@ class Problem extends React.Component {
             <Grid item>
               <Grid justify="space-between" alignItems="baseline" container>
                 <Grid item>
-                  <InlineInput onSave={this.updateProblemTitle} value={problem.title} />
-                  {/* <Typography variant="h6">{problem.title}</Typography> */}
-                  <Typography>{problem.question}</Typography>
+                  <InputField
+                    name="title"
+                    label="Title"
+                    variant="standard"
+                    onChange={this.updateProblem}
+                    value={problem.title}
+                  />
                 </Grid>
-                {problem.last_updated && (
-                  <Grid item>
+                <Grid item>
+                  {problem.last_updated && (
                     <Typography variant="caption">
                       {`Last updated: ${moment(problem.last_updated).format('MM/DD/YYYY hh:mm:ssA')}`}
                     </Typography>
-                  </Grid>
-                )}
+                  )}
+                </Grid>
               </Grid>
+            </Grid>
+            <Grid fullWidth item>
+              <InputField
+                name="question"
+                label="Question"
+                variant="standard"
+                rowsMax={3}
+                onChange={this.updateProblem}
+                value={problem.question}
+                FormControlProps={{
+                  fullWidth: true,
+                }}
+                multiline
+              />
             </Grid>
             <Grid item>
               <InputField
+                name="solution"
+                label="Solution"
                 rows={9}
                 value={solution}
                 onChange={this.parseSolution}
@@ -290,10 +328,10 @@ class Problem extends React.Component {
             <Grid item>
               <Grid spacing={2} container>
                 <Grid item>
-                  <InputField value={input} onChange={this.evaluateInput} />
+                  <InputField label="Input" name="input" value={input} onChange={this.evaluateInput} />
                 </Grid>
-                <Grid classes={{ item: classes.solution }} item>
-                  <InputField value={answer} readOnly />
+                <Grid grow item>
+                  <InputField label="Output" name="answer" value={answer} readOnly />
                 </Grid>
               </Grid>
             </Grid>

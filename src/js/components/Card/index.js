@@ -1,20 +1,17 @@
 import React from 'react';
 import classNames from 'classnames';
 import T from 'prop-types';
-import lightBlue from '@material-ui/core/colors/lightBlue';
 import { withStyles } from '@material-ui/core/styles';
 
 import _T from 'Services/custom-prop-types';
-import theme from '../../constants/theme'
 
-console.log(theme.palette.getContrastText(lightBlue[50]));
-
-const styles = () => ({
+const styles = theme => ({
   root: {
     boxSizing: 'border-box',
     display: 'inline-flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
+    color: theme.palette.text.primary,
   },
   noPadding: {
     padding: 0,

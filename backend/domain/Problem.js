@@ -1,8 +1,8 @@
 const moment = require('moment');
 
 const STATUSES = {
-  ATTEMPTED: 'ATTEMPTED',
-  SOLVED: 'SOLVED',
+  ATTEMPTED: 'attempted',
+  SOLVED: 'solved',
 };
 
 function Problem(name, question, status = STATUSES.ATTEMPTED, solution = '') {
@@ -11,11 +11,11 @@ function Problem(name, question, status = STATUSES.ATTEMPTED, solution = '') {
   this.solution = solution;
   this.status = status;
 
-  function getAddProductSQL() {
+  function getAddProblemSQL() {
     return `INSERT INTO PROBLEM(name, question, solution, status) \
-                   VALUES('${this.name}', '${this.question}', '${this.solution}', '${this.status}')`;
+                   VALUES('${this.name}', '${this.question}', '${this.solution}', '${this.status}') RETURNING *;`;
   }
-  this.getAddProductSQL = getAddProductSQL;
+  this.getAddProblemSQL = getAddProblemSQL;
 }
 
 function getProblemByIdSQL(id) {

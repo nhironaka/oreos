@@ -16,7 +16,6 @@ import maskCreator from './masks';
 const styles = theme => ({
   root: {
     position: 'relative',
-    padding: theme.spacing(),
   },
   inputRoot: {
     '&:after': {
@@ -26,22 +25,20 @@ const styles = theme => ({
       content: 'none',
     },
   },
-  inputInput: {
-    padding: 0,
-  },
+  inputInput: {},
   outlined: {
-    border: theme.mixins.border(),
-    borderRadius: theme.shape.borderRadius,
-    boxSizing: 'border-box',
-    padding: theme.spacing(),
+    '& $inputRoot': {
+      border: theme.mixins.border(),
+      borderRadius: theme.shape.borderRadius,
+      boxSizing: 'border-box',
+      padding: theme.spacing(0.75, 1),
+    },
     '& $formHelperTextError': {
       top: theme.spacing(),
       right: theme.spacing(),
     },
   },
   labelRoot: {
-    transform: 'none',
-    position: 'relative',
     '& + $formControl': {},
     '&$labelFocused': {},
   },
@@ -59,9 +56,7 @@ const styles = theme => ({
     maxWidth: '50%',
   },
   iconAdornment: {},
-  startAdornment: {
-    lineHeight: '1.25rem',
-  },
+  startAdornment: {},
   endAdornment: {},
 });
 
@@ -125,6 +120,7 @@ class InputField extends React.Component {
       target: { value },
     } = e;
     let valid = true;
+    e.persist();
 
     if (patternType) {
       const patternError = patternValidator(patternType, value);
@@ -167,6 +163,7 @@ class InputField extends React.Component {
 
   render() {
     const {
+      color,
       label,
       value,
       defaultValue,
@@ -175,6 +172,7 @@ class InputField extends React.Component {
       onChange,
       patternType,
       maskType,
+      name,
       classes,
       error: inputError,
       FormControlProps,
@@ -198,11 +196,7 @@ class InputField extends React.Component {
           </InputLabel>
         )}
         <Input
-          classes={{
-            root: classes.inputRoot,
-            input: classes.inputInput,
-            formControl: classes.formControl,
-          }}
+          name={name}
           onChange={this.onInputChange}
           error={!!(error || inputError)}
           value={displayValue}
@@ -210,6 +204,11 @@ class InputField extends React.Component {
           endAdornment={this.endAdornment}
           onBlur={this.toggleFocus}
           onFocus={this.toggleFocus}
+          classes={{
+            root: classes.inputRoot,
+            input: classes.inputInput,
+            formControl: classes.formControl,
+          }}
           {...rest}
         />
         {(error || inputError) && (
@@ -231,10 +230,15 @@ InputField.defaultProps = {
   helperText: '',
   value: '',
   adornment: [],
-  FormControlProps: {}
+  FormControlProps: {},
+  color: 'primary',
 };
 
 InputField.propTypes = {
+  color: T.oneOf(['primary', 'secondary']),
+  /* Inout element name */
+  name: T.string.isRequired,
+  /* Default value */
   defaultValue: T.any,
   /* Input label */
   label: T.node,

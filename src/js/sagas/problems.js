@@ -39,9 +39,10 @@ function* addProblem({ problem }) {
     const problems = yield select(selectProblems);
     problems.push(rows[0]);
 
-    yield all([put(fetchProblemsSuccess(problems)), put(selectProblem(rows[0]))]);
+    return yield all([put(fetchProblemsSuccess(problems)), put(selectProblem(rows[0]))]);
   } catch (error) {
     yield put(setError(error, 'problems'));
+    return null;
   }
 }
 
