@@ -74,16 +74,29 @@ class Problem extends React.Component {
     },
   ];
 
+  static moveCursorTo(ref, position) {
+    const { current: inp } = ref;
+    if (inp.createTextRange) {
+      const part = inp.createTextRange();
+
+      part.move('character', position);
+      part.select();
+    } else if (inp.setSelectionRange) {
+      inp.setSelectionRange(position, position);
+    }
+  }
+
   static getDerivedStateFromProps(props, state) {
     if (state.prevProblemId !== props.problem.id) {
       return {
         prevProblemId: props.problem.id,
-        solution: get(props, 'problem.solution', `function ${camelCase(get(props, 'problem.name', ''))}() {}`),
         parsed: null,
         answer: '',
         error: null,
         prevKey: null,
-        updates: {},
+        updates: {
+          solution: get(props, 'problem.solution', `function ${camelCase(get(props, 'problem.name', ''))}() {}`),
+        },
       };
     }
 
@@ -94,6 +107,7 @@ class Problem extends React.Component {
     super(props);
 
     this.inputRef = React.createRef();
+    this.questionInputRef = React.createRef();
     this.saveProblemDebounced = debounce(this.saveProblem, 500);
     this.parseSolutionDebounced = debounce(this.parseSolutionDebounced.bind(this), 250);
     this.state = {
@@ -103,10 +117,13 @@ class Problem extends React.Component {
   }
 
   componentDidMount() {
-    const { solution } = this.state;
+    const {
+      updates: { solution },
+    } = this.state;
 
     this.inputRef.current.addEventListener('keydown', this.onKeyPress.bind(this));
     this.parseSolutionDebounced(solution);
+    this.solve();
   }
 
   componentWillUnmount() {
@@ -115,28 +132,44 @@ class Problem extends React.Component {
 
   onKeyPress(e) {
     const {
-      problem: { id },
-    } = this.props;
-    const {
       key,
       target: { selectionStart, value },
     } = e;
     const { prevKey } = this.state;
-
-    if (key.toLowerCase() === 'tab') {
+    let toInsert = '';
+    if (/^Tab|[{(]$/.test(key) || (key === 'Enter' && prevKey === '{')) {
       e.preventDefault();
-      this.saveProblemDebounced({
-        id,
-        solution: `${value.slice(0, selectionStart)}    ${value.slice(selectionStart)}`,
-      });
+      switch (key) {
+        case 'Tab':
+          toInsert = '    ';
+          break;
+        case '(':
+          toInsert = '()';
+          break;
+        case '{':
+          toInsert = '{}';
+          break;
+        case 'Enter':
+          toInsert = prevKey === '{' ? '\n    ' : '';
+          break;
+        default:
+          break;
+      }
+
+      this.setState(
+        {
+          updates: {
+            solution: `${value.slice(0, selectionStart)}${toInsert}${value.slice(selectionStart)}`,
+          },
+        },
+        () => {
+          this.saveProblemDebounced();
+          Problem.moveCursorTo(this.inputRef, selectionStart);
+        }
+      );
     }
-    if (key.toLowerCase() === 'enter' && prevKey === '{') {
-      this.saveProblemDebounced({
-        id,
-        solution: `${value.slice(0, selectionStart)}\n    ${value.slice(selectionStart)}`,
-      });
-    }
-    if (/{|}/.test(key)) {
+
+    if (key === '{') {
       this.setState({
         prevKey: key,
       });
@@ -153,9 +186,7 @@ class Problem extends React.Component {
           [e.target.name]: value,
         },
       }),
-      () => {
-        this.saveProblemDebounced(this.state.updates);
-      }
+      this.saveProblemDebounced
     );
   };
 
@@ -163,18 +194,16 @@ class Problem extends React.Component {
     e.preventDefault();
 
     this.setState({
-      solution: e.target.value,
+      updates: {
+        solution: e.target.value,
+      },
     });
     this.parseSolutionDebounced(e.target.value);
   };
 
   /* eslint-disable no-new-func */
   parseSolutionDebounced = value => {
-    const {
-      problem: { id },
-      input,
-    } = this.props;
-    const { solution } = this.state;
+    const { input } = this.props;
     const matched = value.match(/^\s*\n*function (\w+)\(([^)]*)\)\s*\n*\{\n*\s*((?!function).*)\n*\s*\}$/s);
 
     if (matched) {
@@ -183,26 +212,29 @@ class Problem extends React.Component {
         'input',
         `
           ${value}
-          return JSON.stringify(${functionName}(input));
+          return JSON.stringify(${functionName}(...input));
         `
       );
 
       try {
         this.setState({
           answer: input && parsed(Problem.parseInput(input)),
+          updates: {
+            solution: value,
+          },
           error: null,
         });
       } catch (e) {
         this.setState({
           answer: null,
+          updates: {
+            solution: value,
+          },
           error: getError(e),
         });
       }
     }
-    this.saveProblemDebounced({
-      id,
-      solution,
-    });
+    this.saveProblemDebounced();
   };
   /* eslint-enable */
 
@@ -264,7 +296,11 @@ class Problem extends React.Component {
 
   render() {
     const { problem, input, classes } = this.props;
-    const { solution, answer, error } = this.state;
+    const {
+      updates: { solution },
+      answer,
+      error,
+    } = this.state;
 
     return (
       <Card className={classes.root} classes={{ root: classes.card }} noBorder>
@@ -279,13 +315,16 @@ class Problem extends React.Component {
           <Grid direction="column" spacing={2} container>
             <Grid item>
               <Grid justify="space-between" alignItems="baseline" container>
-                <Grid item>
+                <Grid grow item>
                   <InputField
                     name="title"
                     label="Title"
                     variant="standard"
                     onChange={this.updateProblem}
                     value={problem.title}
+                    FormControlProps={{
+                      fullWidth: true,
+                    }}
                   />
                 </Grid>
                 <Grid item>
@@ -303,8 +342,10 @@ class Problem extends React.Component {
                 label="Question"
                 variant="standard"
                 rowsMax={3}
+                onBlur={() => this.moveCursorTo(this.questionInputRef, 0)}
                 onChange={this.updateProblem}
                 value={problem.question}
+                inputRef={this.questionInputRef}
                 FormControlProps={{
                   fullWidth: true,
                 }}
@@ -328,7 +369,14 @@ class Problem extends React.Component {
             <Grid item>
               <Grid spacing={2} container>
                 <Grid item>
-                  <InputField label="Input" name="input" value={input} onChange={this.evaluateInput} />
+                  <InputField
+                    label="Input"
+                    name="input"
+                    rowsMax={9}
+                    value={input}
+                    onChange={this.evaluateInput}
+                    multiline
+                  />
                 </Grid>
                 <Grid grow item>
                   <InputField label="Output" name="answer" value={answer} readOnly />

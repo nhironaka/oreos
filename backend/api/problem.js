@@ -38,8 +38,8 @@ router.post('/:problemId', (req, res) => {
 
 // Handles url POST:/problems/:id
 router.post('/', (req, res) => {
-  const { name, question, status, solution } = req.body;
-  const problem = new Problem(name, question, status, solution);
+  const { name, question, title, status, solution } = req.body;
+  const problem = new Problem(name, question, title, status, solution);
 
   db.query(problem.getAddProblemSQL(problem), (err, data) => {
     if (err) {

@@ -1,19 +1,22 @@
 const moment = require('moment');
+const escape = require('pg-escape');
 
 const STATUSES = {
-  ATTEMPTED: 'attempted',
-  SOLVED: 'solved',
+  ATTEMPTED: 'ATTEMPTED',
+  SOLVED: 'SOLVED',
 };
 
-function Problem(name, question, status = STATUSES.ATTEMPTED, solution = '') {
+function Problem(name, question, title, status = STATUSES.ATTEMPTED, solution = '') {
   this.name = name;
   this.question = question;
+  this.title = title;
   this.solution = solution;
-  this.status = status;
+  this.status = STATUSES[status];
 
   function getAddProblemSQL() {
-    return `INSERT INTO PROBLEM(name, question, solution, status) \
-                   VALUES('${this.name}', '${this.question}', '${this.solution}', '${this.status}') RETURNING *;`;
+    return escape(`INSERT INTO PROBLEM(name, question, solution, status, title) \
+                   VALUES('${this.name}', '${this.question}', '${this.solution}', 
+                   '${this.status}', '${this.title}') RETURNING *;`);
   }
   this.getAddProblemSQL = getAddProblemSQL;
 }
@@ -28,7 +31,10 @@ function updateProblemByIdSQL(id, problem) {
     sql.push(`question='${problem.question}',`);
   }
   if (problem.solution) {
-    sql.push(`solution='${problem.solution}',`);
+    sql.push(`solution='${problem.solution.replace(/'/g, '"')}',`);
+  }
+  if (problem.title) {
+    sql.push(`title='${problem.title}',`);
   }
   if (problem.status) {
     if (!STATUSES[problem.status]) {
@@ -36,14 +42,15 @@ function updateProblemByIdSQL(id, problem) {
         `Problem status must be one of ${STATUSES.ATTEMPTED}, ${STATUSES.SOLVED}. You entered - ${problem.status}`
       );
     }
-    sql.push(`status='${problem.status}',`);
+    sql.push(`status='${STATUSES[problem.status]}',`);
   }
   if (sql.length < 2) {
     throw new Error('Unable to update problem. Invalid fields.');
   }
+
   sql.push(`last_updated='${moment().format('YYYY-MM-DD HH:mm:ss')}' WHERE ID=${id} RETURNING *;`);
 
-  return sql.join(' ');
+  return escape(sql.join(' '));
 }
 
 function deleteProblemByIdSQL(id) {
@@ -51,7 +58,7 @@ function deleteProblemByIdSQL(id) {
 }
 
 function getAllProblemsSQL() {
-  return `SELECT * FROM PROBLEM`;
+  return `SELECT * FROM PROBLEM ORDER BY last_updated DESC`;
 }
 
 Problem.STATUSES = STATUSES;

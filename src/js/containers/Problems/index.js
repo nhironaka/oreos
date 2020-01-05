@@ -2,6 +2,7 @@ import React from 'react';
 import T from 'prop-types';
 import get from 'lodash/get';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { withStyles } from '@material-ui/core/styles';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
@@ -123,8 +124,8 @@ class Problems extends React.Component {
                   noBorder
                 >
                   <Typography variant="subtitle1">
-                    Add problem
-                    <FontAwesomeIcon icon={['far', 'plus']} />
+                    {'Add problem '}
+                    <FontAwesomeIcon icon={faPlus} />
                   </Typography>
                 </Card>
               </li>

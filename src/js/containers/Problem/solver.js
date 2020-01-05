@@ -1,23 +1,51 @@
 export default function solver(input) {
-  function merge(intervals) {
-    const merged = [];
-    const sorted = intervals.sort((b, a) => {
-      if (a[0] === b[0]) {
-        return b[1] - a[1];
+  function isValidSudoku(board) {
+    console.log(board)
+    for (let i = 0; i < 9; i++) {
+      if (!checkLinear(i, board, 'vertical')) {
+        return false;
       }
-      return b[0] - a[0];
-    });
-
-    for (let i = 0; i < intervals.length; i++) {
-      const lastRtnEnd = i === 0 ? 0 : merged[merged.length - 1][1];
-      if (i === 0 || sorted[i][0] > lastRtnEnd) {
-        merged.push(sorted[i]);
-      } else {
-        merged[merged.length - 1][1] = Math.max(lastRtnEnd, sorted[i][1]);
+      for (let j = 0; j < 9; j++) {
+        if (i % 3 === 0 && j % 3 === 0 && !checkSquare([i, j], board)) {
+          return false;
+        }
+        if (!checkLinear(j, board, 'horizontal')) {
+          return false;
+        }
       }
     }
-
-    return merged;
+    return true;
   }
-  return JSON.stringify(merge(input));
+
+  function checkSquare([x, y], board) {
+    const seen = {};
+    for (let i = x; i < x + 3; i++) {
+      for (let j = y; j < y + 3; j++) {
+        if (seen[board[i][j]]) {
+          return false;
+        }
+         if (board[i][j] !== '.') {
+           seen[board[i][j]] = `[${i}, ${j}]`;
+         }
+      }
+    }
+    return true;
+  }
+
+  function checkLinear(starting, board, direction) {
+    const seen = {};
+    for (let i = 0; i < 9; i++) {
+      const x = direction === 'vertical' ? starting : i;
+      const y = direction === 'vertical' ? i : starting;
+      if (seen[board[x][y]]) {
+        return false;
+      }
+       if (board[x][y] !== '.') {
+        seen[board[x][y]] = `[${x}, ${y}]`;
+      }
+    }
+    return true;
+  }
+
+  return JSON.stringify(isValidSudoku(...input));
 }
