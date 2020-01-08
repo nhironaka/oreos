@@ -1,5 +1,5 @@
-dist
 node_modules
-backend/.env
+ui/dist
 .DS_Store
 .vscode
+.env

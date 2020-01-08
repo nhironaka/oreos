@@ -9,12 +9,10 @@
     }
   },
   "env": {
-    "es6": true
-  },
-  "globals": {
-    "document": true,
-    "localStorage": true,
-    "fetch": true
+    "es6": true,
+    "amd": true,
+    "node": true,
+    "browser": true
   },
   "rules": {
     "comma-dangle": ["error", "always-multiline"],

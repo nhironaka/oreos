@@ -7,7 +7,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import { withStyles } from '@material-ui/styles';
 
-import _T from 'Services/custom-prop-types';
+import _T from 'ui/src/js/services/custom-prop-types';
 
 const styles = () => ({
   root: {

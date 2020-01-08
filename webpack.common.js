@@ -1,15 +1,13 @@
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const path = require('path');
 
-const parts = require('./webpack.parts');
-
 module.exports = {
-  ...parts.generateSourceMaps({ type: 'inline-source-map' }),
+  entry: path.resolve(__dirname, 'ui/src/index.js'),
   module: {
     rules: [
       {
         test: /\.jsx?$/,
-        exclude: /node_modules/,
+        exclude: /node_modules|backend/,
         use: {
           loader: 'babel-loader',
         },
@@ -42,25 +40,27 @@ module.exports = {
   },
   plugins: [
     new HtmlWebPackPlugin({
-      template: './src/index.html',
-      filename: './index.html',
+      template: path.resolve(__dirname, 'ui/src/index.html'),
+      filename: 'index.html',
     }),
   ],
+  optimization: {
+    runtimeChunk: false,
+    splitChunks: {
+      chunks: 'async',
+      name: false,
+    },
+  },
   resolve: {
     enforceExtension: false,
     modules: ['node_modules'],
     extensions: ['.js', '.jsx'],
     alias: {
-      Components: path.resolve(__dirname, 'src/js/components/'),
-      Services: path.resolve(__dirname, 'src/js/services/'),
-      Actions: path.resolve(__dirname, 'src/js/actions/'),
-      Selectors: path.resolve(__dirname, 'src/js/selectors/'),
-      Reducers: path.resolve(__dirname, 'src/js/reducers/'),
+      Components: path.resolve(__dirname, 'ui/src/js/components/'),
+      Services: path.resolve(__dirname, 'ui/src/js/services/'),
+      Actions: path.resolve(__dirname, 'ui/src/js/actions/'),
+      Selectors: path.resolve(__dirname, 'ui/src/js/selectors/'),
+      Reducers: path.resolve(__dirname, 'ui/src/js/reducers/'),
     },
-  },
-  devServer: {
-    compress: false,
-    hotOnly: true,
-    port: 3000,
   },
 };
