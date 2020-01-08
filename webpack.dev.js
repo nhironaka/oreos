@@ -9,6 +9,6 @@ module.exports = merge(common, {
   devServer: {
     overlay: true,
     compress: false,
-    port: 3000,
+    port: 5000,
   },
 });

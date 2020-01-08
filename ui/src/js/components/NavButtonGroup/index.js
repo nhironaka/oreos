@@ -1,6 +1,7 @@
 import React from 'react';
 import T from 'prop-types';
 import classNames from 'classnames';
+import get from 'lodash/get';
 import { withStyles } from '@material-ui/core/styles';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 
@@ -13,6 +14,10 @@ const styles = theme => ({
   },
   button: {
     borderRadius: 0,
+    '&.disabled': {
+      color: 'inherit',
+      border: 'inherit',
+    },
   },
   selected: {
     backgroundColor: theme.palette.action.hover,
@@ -30,8 +35,10 @@ function NavButtonGroup({ size, color, selected, variant, options, onClick, clas
           onClick={e => onClick(e, option)}
           classes={{ root: classes.button }}
           className={classNames({
-            [classes.selected]: selected === option.id,
+            [classes.selected]: get(selected, option.id, selected === option.id),
+            disabled: option.type === 'label',
           })}
+          disabled={option.type === 'label'}
           disableRipple
         >
           {option.label}
@@ -52,7 +59,7 @@ NavButtonGroup.propTypes = {
   size: T.oneOf(['small', 'medium', 'large']),
   color: T.oneOf(['default', 'inherit', 'primary', 'secondary']),
   variant: T.oneOf(['text', 'outlined', 'contained']),
-  selected: T.string,
+  selected: T.oneOf([T.string, T.object]),
   options: T.array.isRequired,
   onClick: T.func.isRequired,
   classes: _T.classes.isRequired,

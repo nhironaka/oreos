@@ -6,17 +6,24 @@ const STATUSES = {
   SOLVED: 'SOLVED',
 };
 
-function Problem(name, question, title, status = STATUSES.ATTEMPTED, solution = '') {
+const DIFFICULTY = {
+  EASY: 'EASY',
+  MEDIUM: 'MEDIUM',
+  HARD: 'HARD',
+};
+
+function Problem(name, question, title, difficulty, status = STATUSES.ATTEMPTED, solution = '') {
   this.name = name;
   this.question = question;
   this.title = title;
   this.solution = solution;
   this.status = STATUSES[status];
+  this.difficulty = DIFFICULTY[difficulty];
 
   function getAddProblemSQL() {
-    return escape(`INSERT INTO PROBLEM(name, question, solution, status, title) \
+    return escape(`INSERT INTO PROBLEM(name, question, solution, status, title, difficulty) \
                    VALUES('${this.name}', '${this.question}', '${this.solution}', 
-                   '${this.status}', '${this.title}') RETURNING *;`);
+                   '${this.status}', '${this.title}', '${this.difficulty}) RETURNING *;`);
   }
   this.getAddProblemSQL = getAddProblemSQL;
 }
@@ -31,7 +38,7 @@ function updateProblemByIdSQL(id, problem) {
     sql.push(`question='${problem.question}',`);
   }
   if (problem.solution) {
-    sql.push(`solution='${problem.solution.replace(/'/g, '"')}',`);
+    sql.push(`solution='${problem.solution.replace(/'/g, '&apos;')}',`);
   }
   if (problem.title) {
     sql.push(`title='${problem.title}',`);
@@ -43,6 +50,14 @@ function updateProblemByIdSQL(id, problem) {
       );
     }
     sql.push(`status='${STATUSES[problem.status]}',`);
+  }
+  if (problem.difficulty) {
+    if (!DIFFICULTY[problem.difficulty]) {
+      throw new Error(
+        `Problem difficulty must be one of ${DIFFICULTY.EASY}, ${DIFFICULTY.MEDIUM}, ${DIFFICULTY.HARD}. You entered - ${problem.difficulty}`
+      );
+    }
+    sql.push(`difficultry='${DIFFICULTY[problem.difficulty]}',`);
   }
   if (sql.length < 2) {
     throw new Error('Unable to update problem. Invalid fields.');

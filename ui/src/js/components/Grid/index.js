@@ -19,7 +19,7 @@ const styles = () => ({
 function NavBar({ grow, fullWidth, classes, ...rest }) {
   return (
     <Grid
-      className={classNames(classes.rest, {
+      className={classNames(classes.root, {
         [classes.fullWidth]: fullWidth,
         [classes.grow]: grow,
       })}

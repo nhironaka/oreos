@@ -52,7 +52,9 @@ const styles = theme => ({
       borderBottom: theme.mixins.border(),
     },
   },
-  label: {},
+  selectedProblemWrapper: {
+    borderLeft: theme.mixins.border(1),
+  },
 });
 
 class Problems extends React.Component {
@@ -132,7 +134,7 @@ class Problems extends React.Component {
             </UnorderedList>
           )}
         </Grid>
-        <Grid xs={9} sm={8} item>
+        <Grid xs={9} sm={8} classes={{ root: classes.selectedProblemWrapper }} item>
           {selectedProblem && <Problem problem={selectedProblem} key={selectProblem.id} />}
         </Grid>
       </Grid>

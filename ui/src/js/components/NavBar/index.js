@@ -9,15 +9,14 @@ import Typography from 'Components/Typography';
 const styles = theme => ({
   root: {
     borderBottom: theme.mixins.border(),
-    background: theme.palette.common.white,
   },
 });
 
 function NavBar({ classes }) {
   return (
-    <AppBar color="inherit" position="static" elevation={0} classes={{ root: classes.root }}>
+    <AppBar color="primary" position="static" elevation={0} classes={{ root: classes.root }}>
       <Toolbar>
-        <Typography variant="h6">Oreos</Typography>
+        <Typography variant="h6" color="inherit">Oreos</Typography>
       </Toolbar>
     </AppBar>
   );

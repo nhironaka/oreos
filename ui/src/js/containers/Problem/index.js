@@ -23,9 +23,7 @@ import Button from 'Components/Button';
 import solver from './solver';
 
 const style = theme => ({
-  root: {
-    borderLeft: theme.mixins.border(),
-  },
+  root: {},
   card: {
     width: '100%',
     display: 'flex',
@@ -50,6 +48,9 @@ const style = theme => ({
       '&:first-child': {
         borderLeftColor: 'transparent',
       },
+      '&:nth-child(3)': {
+        borderLeftWidth: 2,
+      },
     },
   },
 });
@@ -71,6 +72,21 @@ class Problem extends React.Component {
     {
       id: 'SOLVED',
       label: 'Solved',
+    },
+  ];
+
+  static DIFFICULTY = [
+    {
+      id: 'EASY',
+      label: 'Easy',
+    },
+    {
+      id: 'MEDIUM',
+      label: 'Medium',
+    },
+    {
+      id: 'HARD',
+      label: 'Hard',
     },
   ];
 
@@ -107,6 +123,20 @@ class Problem extends React.Component {
     super(props);
 
     this.inputRef = React.createRef();
+    this.navButtonOptions = [
+      {
+        id: 'STATUS_LABEL',
+        label: 'Status',
+        type: 'label',
+      },
+      ...Problem.PROBLEM_STATUS,
+      {
+        id: 'DIFFICULTY_LABEL',
+        label: 'Difficulty',
+        type: 'label',
+      },
+      ...Problem.DIFFICULTY,
+    ];
     this.questionInputRef = React.createRef();
     this.saveProblemDebounced = debounce(this.saveProblem, 500);
     this.parseSolutionDebounced = debounce(this.parseSolutionDebounced.bind(this), 250);
@@ -177,16 +207,17 @@ class Problem extends React.Component {
   }
 
   updateProblem = (e, value) => {
-    const { problem } = this.props;
     this.setState(
-      state => ({
+      {
         updates: {
-          ...state.updates,
-          ...problem,
           [e.target.name]: value,
         },
-      }),
-      this.saveProblemDebounced
+      },
+      () => {
+        if (problem.title && problem.question) {
+          this.saveProblemDebounced();
+        }
+      }
     );
   };
 
@@ -276,6 +307,17 @@ class Problem extends React.Component {
     });
   };
 
+  toggleDifficulty = (_e, { id: difficulty }) => {
+    const {
+      problem: { id },
+    } = this.props;
+
+    this.props.updateProblem({
+      id,
+      difficulty,
+    });
+  };
+
   saveProblem = async () => {
     const { problem } = this.props;
     const { updates } = this.state;
@@ -285,7 +327,7 @@ class Problem extends React.Component {
     };
 
     if (problem.id) {
-      this.props.updateProblem(updated);
+      this.props.updateProblem(updates);
     } else if (updated.title && updated.question) {
       this.props.addProblem({
         ...updates,
@@ -306,8 +348,11 @@ class Problem extends React.Component {
       <Card className={classes.root} classes={{ root: classes.card }} noBorder>
         <NavButtonGroup
           variant="outlined"
-          selected={problem.status}
-          options={Problem.PROBLEM_STATUS}
+          selected={{
+            [problem.status]: true,
+            [problem.difficulty]: true,
+          }}
+          options={this.navButtonOptions}
           onClick={this.toggleStatus}
           classes={{ root: classes.navButtonGroup }}
         />

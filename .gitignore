@@ -1,5 +1,5 @@
 node_modules
-ui/dist
+dist
 .DS_Store
 .vscode
 .env

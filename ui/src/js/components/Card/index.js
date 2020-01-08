@@ -31,7 +31,7 @@ const styles = theme => ({
   },
   hover: {
     '&:hover': {
-      backgroundColor: '#F8F8F8',
+      backgroundColor: theme.palette.action.hover,
     },
   },
   mediumPadding: {
@@ -50,14 +50,18 @@ const styles = theme => ({
   },
   colorPrimary: {
     backgroundColor: theme.palette.primary.light,
-    color: theme.palette.primary.contrastText,
+    color: theme.palette.text.main,
     borderColor: theme.palette.primary.main,
   },
   colorDefault: {
     backgroundColor: theme.palette.common.white,
     borderColor: theme.palette.border.main,
   },
-  colorSecondary: { backgroundColor: theme.palette.secondary.light },
+  colorSecondary: {
+    backgroundColor: theme.palette.secondary.light,
+    color: theme.palette.text.main,
+    borderColor: theme.palette.secondary.main,
+  },
   colorDisabled: {
     backgroundColor: theme.palette.action.disabledBackground,
     color: theme.palette.action.disabled,
