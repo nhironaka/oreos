@@ -21,9 +21,9 @@ function Problem(name, question, title, difficulty, status = STATUSES.ATTEMPTED,
   this.difficulty = DIFFICULTY[difficulty];
 
   function getAddProblemSQL() {
-    return escape(`INSERT INTO PROBLEM(name, question, solution, status, title, difficulty) \
+    return `INSERT INTO PROBLEM(name, question, solution, status, title, difficulty) \
                    VALUES('${this.name}', '${this.question}', '${this.solution}', 
-                   '${this.status}', '${this.title}', '${this.difficulty}) RETURNING *;`);
+                   '${this.status}', '${this.title}', '${this.difficulty}') RETURNING *;`;
   }
   this.getAddProblemSQL = getAddProblemSQL;
 }
@@ -38,7 +38,7 @@ function updateProblemByIdSQL(id, problem) {
     sql.push(`question='${problem.question}',`);
   }
   if (problem.solution) {
-    sql.push(`solution='${problem.solution.replace(/'/g, '&apos;')}',`);
+    sql.push(`solution='${problem.solution.replace(/'/g, '"')}',`);
   }
   if (problem.title) {
     sql.push(`title='${problem.title}',`);
@@ -54,13 +54,14 @@ function updateProblemByIdSQL(id, problem) {
   if (problem.difficulty) {
     if (!DIFFICULTY[problem.difficulty]) {
       throw new Error(
-        `Problem difficulty must be one of ${DIFFICULTY.EASY}, ${DIFFICULTY.MEDIUM}, ${DIFFICULTY.HARD}. You entered - ${problem.difficulty}`
+        `Problem difficulty must be one of ${DIFFICULTY.EASY}, ${DIFFICULTY.MEDIUM}, 
+        ${DIFFICULTY.HARD}. You entered - ${problem.difficulty}`
       );
     }
-    sql.push(`difficultry='${DIFFICULTY[problem.difficulty]}',`);
+    sql.push(`difficulty='${DIFFICULTY[problem.difficulty]}',`);
   }
   if (sql.length < 2) {
-    throw new Error('Unable to update problem. Invalid fields.');
+    throw new Error(`Unable to update problem. Invalid fields - ${Object.values(problem).join(', ')}`);
   }
 
   sql.push(`last_updated='${moment().format('YYYY-MM-DD HH:mm:ss')}' WHERE ID=${id} RETURNING *;`);

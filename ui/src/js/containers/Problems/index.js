@@ -1,6 +1,7 @@
 import React from 'react';
 import T from 'prop-types';
 import get from 'lodash/get';
+import debounce from 'lodash/debounce';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { withStyles } from '@material-ui/core/styles';
@@ -11,6 +12,7 @@ import _T from 'Services/custom-prop-types';
 import { fetchProblems, selectProblem } from 'Actions/problems';
 import { selectFetchingProblems, selectProblems, selectSelectedProblem } from 'Selectors/problems';
 import Grid from 'Components/Grid';
+import InputField from 'Components/InputField';
 import UnorderedList from 'Components/UnorderedList';
 import Typography from 'Components/Typography';
 import Card from 'Components/Card';
@@ -19,6 +21,9 @@ import Problem from '../Problem';
 
 const styles = theme => ({
   root: {},
+  searchCard: {
+    width: '100%',
+  },
   question: {
     maxHeight: 48,
     overflow: 'hidden',
@@ -78,14 +83,33 @@ class Problems extends React.Component {
         id: 'question',
       },
     ];
+    this.onSearch = debounce(({ target: { value } }) => this.onSearch(value));
+    this.state = {
+      search: '',
+      filteredList: [],
+    };
   }
 
   componentDidMount() {
     this.props.fetchProblems();
   }
 
+  onSearch = searchText => {
+    const { problems } = this.props;
+    const search = new RegExp(searchText.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'));
+
+    this.setState({
+      search,
+      filteredList: search
+        ? problems.filter(problem => search.test(problem.solution) || search.test(problems.title))
+        : [],
+    });
+  };
+
   render() {
     const { loading, problems, selectedProblem, classes } = this.props;
+    const { search, filteredList } = this.state;
+    const list = search ? filteredList : problems;
     const selectedProblemId = get(selectedProblem, 'id');
 
     return (
@@ -95,7 +119,22 @@ class Problems extends React.Component {
             <Loading />
           ) : (
             <UnorderedList classes={{ root: classes.unorderedList }}>
-              {problems.map(problem => (
+              {problems.length > 0 && (
+                <li>
+                  <Card padding="md" classes={{ root: classes.searchCard }} noBorder>
+                    <InputField
+                      name="search"
+                      value={search}
+                      onChange={this.onSearch}
+                      adornment={[{ type: 'icon', value: 'search' }]}
+                      FormControlProps={{
+                        fullWidth: true,
+                      }}
+                    />
+                  </Card>
+                </li>
+              )}
+              {list.map(problem => (
                 <li key={problem.id}>
                   <Card
                     Component="button"
@@ -121,6 +160,7 @@ class Problems extends React.Component {
                   onClick={() =>
                     this.props.selectProblem({
                       status: Problem.PROBLEM_STATUS[0].id,
+                      difficulty: Problem.DIFFICULTY[1].id,
                     })
                   }
                   noBorder

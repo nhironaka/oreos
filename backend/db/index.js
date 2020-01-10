@@ -16,6 +16,7 @@ pool.connect();
 function executeQuery(sql, callback) {
   return pool.query(sql, (error, results) => {
     if (error) {
+      console.trace(error);
       return callback(error, null);
     }
     return callback(null, results);

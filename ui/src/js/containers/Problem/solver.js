@@ -1,51 +1,50 @@
 export default function solver(input) {
-  function isValidSudoku(board) {
-    console.log(board)
-    for (let i = 0; i < 9; i++) {
-      if (!checkLinear(i, board, 'vertical')) {
-        return false;
-      }
-      for (let j = 0; j < 9; j++) {
-        if (i % 3 === 0 && j % 3 === 0 && !checkSquare([i, j], board)) {
-          return false;
-        }
-        if (!checkLinear(j, board, 'horizontal')) {
-          return false;
+  function exist(board, word) {
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {
+        if (board[i][j] === word[0]) {
+          const used = new Map([[`${i}-${j}`, true]]);
+          if (checkSurrounding([i, j], board, word, 1, used)) {
+            return true;
+          }
         }
       }
     }
-    return true;
+    return false;
   }
 
-  function checkSquare([x, y], board) {
-    const seen = {};
-    for (let i = x; i < x + 3; i++) {
-      for (let j = y; j < y + 3; j++) {
-        if (seen[board[i][j]]) {
-          return false;
-        }
-         if (board[i][j] !== '.') {
-           seen[board[i][j]] = `[${i}, ${j}]`;
-         }
-      }
+  function check(starting, xd, yd, board, word, charIndex, used) {
+    const [x, y] = starting;
+    if (board[x + xd] && board[x + xd][y + yd] === word[charIndex] && !used.get(`${x + xd}-${y + yd}`)) {
+      used.set(`${x + xd}-${y + yd}`, true);
+      return checkSurrounding([x + xd, y + yd], board, word, charIndex + 1, used);
     }
-    return true;
-  }
-
-  function checkLinear(starting, board, direction) {
-    const seen = {};
-    for (let i = 0; i < 9; i++) {
-      const x = direction === 'vertical' ? starting : i;
-      const y = direction === 'vertical' ? i : starting;
-      if (seen[board[x][y]]) {
-        return false;
-      }
-       if (board[x][y] !== '.') {
-        seen[board[x][y]] = `[${x}, ${y}]`;
-      }
+    if (used.get(`${x + xd}-${y + yd}`)) {
+      console.log(x + xd, y + yd, x, y);
     }
-    return true;
+    return false;
   }
 
-  return JSON.stringify(isValidSudoku(...input));
+  function checkSurrounding(starting, board, word, charIndex, used) {
+    if (charIndex === word.length) {
+      return true;
+    }
+    let exists = false;
+    // Check right
+    exists = check(starting, 0, 1, board, word, charIndex, new Map(used));
+    // Check bottom
+    exists = exists || check(starting, 1, 0, board, word, charIndex, new Map(used));
+    // Check bottom right
+    exists = exists || check(starting, 1, 1, board, word, charIndex, new Map(used));
+    // Check left
+    exists = exists || check(starting, 0, -1, board, word, charIndex, new Map(used));
+    // Check top
+    exists = exists || check(starting, -1, 0, board, word, charIndex, new Map(used));
+    // Check top left
+    exists = exists || check(starting, -1, -1, board, word, charIndex, new Map(used));
+
+    return exists;
+  }
+
+  return JSON.stringify(exist(...input));
 }

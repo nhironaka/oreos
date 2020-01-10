@@ -9,6 +9,7 @@ import debounce from 'lodash/debounce';
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
+import { blueGrey } from '@material-ui/core/colors';
 
 import _T from 'Services/custom-prop-types';
 import { selectProblemInput } from 'Selectors/problems';
@@ -26,6 +27,7 @@ const style = theme => ({
   root: {},
   card: {
     width: '100%',
+    height: '100%',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
@@ -50,6 +52,7 @@ const style = theme => ({
       },
       '&:nth-child(3)': {
         borderLeftWidth: 2,
+        borderRightColor: blueGrey[100]
       },
     },
   },
@@ -68,10 +71,12 @@ class Problem extends React.Component {
     {
       id: 'ATTEMPTED',
       label: 'Attempted',
+      type: 'status',
     },
     {
       id: 'SOLVED',
       label: 'Solved',
+      type: 'status',
     },
   ];
 
@@ -79,14 +84,17 @@ class Problem extends React.Component {
     {
       id: 'EASY',
       label: 'Easy',
+      type: 'difficulty',
     },
     {
       id: 'MEDIUM',
       label: 'Medium',
+      type: 'difficulty',
     },
     {
       id: 'HARD',
       label: 'Hard',
+      type: 'difficulty',
     },
   ];
 
@@ -111,6 +119,8 @@ class Problem extends React.Component {
         error: null,
         prevKey: null,
         updates: {
+          difficulty: get(props, 'problem.difficulty', Problem.DIFFICULTY[1].id),
+          status: get(props, 'problem.status', Problem.PROBLEM_STATUS[0].id),
           solution: get(props, 'problem.solution', `function ${camelCase(get(props, 'problem.name', ''))}() {}`),
         },
       };
@@ -121,6 +131,7 @@ class Problem extends React.Component {
 
   constructor(props) {
     super(props);
+    const { problem } = props;
 
     this.inputRef = React.createRef();
     this.navButtonOptions = [
@@ -142,7 +153,11 @@ class Problem extends React.Component {
     this.parseSolutionDebounced = debounce(this.parseSolutionDebounced.bind(this), 250);
     this.state = {
       prevProblemId: '',
-      updates: {},
+      updates: problem.id
+        ? {}
+        : {
+            ...problem,
+          },
     };
   }
 
@@ -208,13 +223,15 @@ class Problem extends React.Component {
 
   updateProblem = (e, value) => {
     this.setState(
-      {
+      state => ({
         updates: {
+          ...state.updates,
           [e.target.name]: value,
         },
-      },
+      }),
       () => {
-        if (problem.title && problem.question) {
+        const { updates } = this.state;
+        if (updates.title && updates.question) {
           this.saveProblemDebounced();
         }
       }
@@ -289,6 +306,7 @@ class Problem extends React.Component {
         error: null,
       });
     } catch (error) {
+      console.trace(error);
       this.setState({
         answer: null,
         error: getError(error),
@@ -296,7 +314,15 @@ class Problem extends React.Component {
     }
   };
 
-  toggleStatus = (_e, { id: status }) => {
+  setValue = (_e, { type, id }) => {
+    if (type === 'status') {
+      this.toggleStatus(id);
+    } else if (type === 'difficulty') {
+      this.toggleDifficulty(id);
+    }
+  };
+
+  toggleStatus = status => {
     const {
       problem: { id },
     } = this.props;
@@ -307,7 +333,7 @@ class Problem extends React.Component {
     });
   };
 
-  toggleDifficulty = (_e, { id: difficulty }) => {
+  toggleDifficulty = difficulty => {
     const {
       problem: { id },
     } = this.props;
@@ -327,7 +353,10 @@ class Problem extends React.Component {
     };
 
     if (problem.id) {
-      this.props.updateProblem(updates);
+      this.props.updateProblem({
+        ...updates,
+        id: problem.id,
+      });
     } else if (updated.title && updated.question) {
       this.props.addProblem({
         ...updates,
@@ -353,7 +382,7 @@ class Problem extends React.Component {
             [problem.difficulty]: true,
           }}
           options={this.navButtonOptions}
-          onClick={this.toggleStatus}
+          onClick={this.setValue}
           classes={{ root: classes.navButtonGroup }}
         />
         <Card padding="md" className={classes.body} classes={{ root: classes.card }} noBorder>
@@ -387,7 +416,7 @@ class Problem extends React.Component {
                 label="Question"
                 variant="standard"
                 rowsMax={3}
-                onBlur={() => this.moveCursorTo(this.questionInputRef, 0)}
+                onBlur={() => Problem.moveCursorTo(this.questionInputRef, 0)}
                 onChange={this.updateProblem}
                 value={problem.question}
                 inputRef={this.questionInputRef}

@@ -59,7 +59,7 @@ NavButtonGroup.propTypes = {
   size: T.oneOf(['small', 'medium', 'large']),
   color: T.oneOf(['default', 'inherit', 'primary', 'secondary']),
   variant: T.oneOf(['text', 'outlined', 'contained']),
-  selected: T.oneOf([T.string, T.object]),
+  selected: T.oneOfType([T.string, T.object]),
   options: T.array.isRequired,
   onClick: T.func.isRequired,
   classes: _T.classes.isRequired,
