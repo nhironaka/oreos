@@ -6,7 +6,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Input from '@material-ui/core/Input';
-import Icon from '@material-ui/core/Icon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import _T from 'Services/custom-prop-types';
 import Typography from '../Typography';
@@ -98,9 +98,11 @@ class InputField extends React.Component {
     const { classes } = this.props;
     if (type === 'icon') {
       return (
-        <Icon classes={{ root: classes.iconAdornment }} className={classes[`${position}Adornment`]}>
-          {value}
-        </Icon>
+        <FontAwesomeIcon
+          classes={{ root: classes.iconAdornment }}
+          className={classes[`${position}Adornment`]}
+          icon={value}
+        />
       );
     }
     if (type === 'string') {

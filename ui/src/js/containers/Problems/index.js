@@ -3,7 +3,7 @@ import T from 'prop-types';
 import get from 'lodash/get';
 import debounce from 'lodash/debounce';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { withStyles } from '@material-ui/core/styles';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
@@ -23,6 +23,7 @@ const styles = theme => ({
   root: {},
   searchCard: {
     width: '100%',
+    borderBottom: theme.mixins.border(),
   },
   question: {
     maxHeight: 48,
@@ -126,7 +127,7 @@ class Problems extends React.Component {
                       name="search"
                       value={search}
                       onChange={this.onSearch}
-                      adornment={[{ type: 'icon', value: 'search' }]}
+                      adornment={[{ type: 'icon', value: faSearch }]}
                       FormControlProps={{
                         fullWidth: true,
                       }}

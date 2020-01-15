@@ -12,6 +12,7 @@ function* fetchProblems() {
     const selectedProblem = yield select(selectSelectedProblem);
 
     yield put(fetchProblemsSuccess(rows));
+
     if (rows.length && !selectedProblem) {
       yield put(selectProblem(rows[0]));
     }

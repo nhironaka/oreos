@@ -12,13 +12,12 @@ const pool = new Pool({
   password: process.env.DB_PASS,
   port: process.env.DB_PORT,
 });
-init(pool);
+init();
 pool.connect();
 
 function executeQuery(sql, callback) {
   return pool.query(sql, (error, results) => {
     if (error) {
-      console.trace(error);
       return callback(error, null);
     }
     return callback(null, results);
