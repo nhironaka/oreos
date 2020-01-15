@@ -98,11 +98,7 @@ class InputField extends React.Component {
     const { classes } = this.props;
     if (type === 'icon') {
       return (
-        <FontAwesomeIcon
-          classes={{ root: classes.iconAdornment }}
-          className={classes[`${position}Adornment`]}
-          icon={value}
-        />
+        <FontAwesomeIcon className={classNames(classes.iconAdornment, classes[`${position}Adornment`])} icon={value} />
       );
     }
     if (type === 'string') {

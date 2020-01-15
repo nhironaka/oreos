@@ -1,4 +1,5 @@
 export default function solver(input) {
+  return;
   function exist(board, word) {
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[i].length; j++) {

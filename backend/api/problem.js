@@ -76,7 +76,7 @@ router.get('/:problemId', (req, res, next) => {
 });
 
 // Handles url DELETE:/problems/:id
-router.delete('/:problemId', (req, res, next) => {
+router.delete('/:problemId', (req, res) => {
   const { problemId } = req.params;
 
   db.query(Problem.deleteProblemByIdSQL(problemId), (err, data) => {
@@ -94,5 +94,11 @@ router.delete('/:problemId', (req, res, next) => {
     }
   });
 });
+
+// Handles url GET:/problems
+router.get('/filter', (req, res) => {
+  
+});
+
 
 module.exports = router;
