@@ -1,16 +1,7 @@
 const moment = require('moment');
 const escape = require('pg-escape');
 
-const STATUSES = {
-  ATTEMPTED: 'ATTEMPTED',
-  SOLVED: 'SOLVED',
-};
-
-const DIFFICULTY = {
-  EASY: 'EASY',
-  MEDIUM: 'MEDIUM',
-  HARD: 'HARD',
-};
+const { STATUSES, DIFFICULTY } = require('../constants/problem');
 
 function Problem(name, question, title, difficulty, status = STATUSES.ATTEMPTED, solution = '') {
   this.name = name;
@@ -77,6 +68,7 @@ function getAllProblemsSQL() {
   return `SELECT * FROM PROBLEM ORDER BY last_updated DESC`;
 }
 
+Problem.filterLocation = './domain/problem.js';
 Problem.STATUSES = STATUSES;
 Problem.deleteProblemByIdSQL = deleteProblemByIdSQL;
 Problem.getProblemByIdSQL = getProblemByIdSQL;

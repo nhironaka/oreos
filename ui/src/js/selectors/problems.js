@@ -12,3 +12,5 @@ export const selectSelectedProblem = createSelector(selectedProblems, state => g
 export const selectProblemInput = createSelector(selectedProblems, selectSelectedProblem, (state, selectedProblem) =>
   get(state, `inputs.${selectedProblem.name}`)
 );
+
+export const selectProblemFilter = createSelector(selectedProblems, state => get(state, 'filters'));

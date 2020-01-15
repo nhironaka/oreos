@@ -1,9 +1,12 @@
 import ActionTypes from '../constants/problems';
+import FilterActionTypes from '../constants/filters';
+
 /**
  * Initial Problems state
  */
 const initialState = {
   problems: [],
+  filters: [],
   inputs: {},
   fetchingProblems: false,
   selectedProblem: null,
@@ -34,6 +37,11 @@ export default function reducer(state = initialState, action) {
       return {
         ...state,
         inputs: { ...state.inputs, [action.problem]: action.input },
+      };
+    case FilterActionTypes.FETCH_FILTER_SUCCESS:
+      return {
+        ...state,
+        filters: action.filterType === 'problem' ? action.filters : state.filters,
       };
     default:
       return state;

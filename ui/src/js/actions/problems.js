@@ -1,5 +1,11 @@
 import ActionTypes from '../constants/problems';
 
+export function init() {
+  return {
+    type: ActionTypes.INIT,
+  };
+}
+
 export function fetchProblemsSuccess(problems) {
   return {
     type: ActionTypes.FETCH_PROBLEMS_SUCCESS,

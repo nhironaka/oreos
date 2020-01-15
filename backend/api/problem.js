@@ -1,6 +1,8 @@
 const express = require('express');
+
 const db = require('../db/index');
 const Problem = require('../domain/Problem');
+const { readFile } = require('../filters/index');
 
 const router = express.Router();
 
@@ -55,11 +57,10 @@ router.post('/', (req, res) => {
 });
 
 // Handles url GET:/problems/:id
-router.get('/:problemId', (req, res, next) => {
+router.get('/:problemId', (req, res) => {
   const { problemId } = req.params;
 
   db.query(Problem.getProblemByIdSQL(problemId), (err, data) => {
-    console.log(err, data)
     if (!err) {
       if (data && data.length > 0) {
         res.status(200).json({
@@ -96,9 +97,16 @@ router.delete('/:problemId', (req, res) => {
 });
 
 // Handles url GET:/problems
-router.get('/filter', (req, res) => {
-  
-});
+router.get('/filter', async (req, res) => {
+  try {
+    const data = await readFile(Problem.filterLocation);
+    res.status(200).json(data);
+  } catch (e) {
+    res.status(400).json({
+      error: 'Unable to fetch problem filter',
+    })
+  }
 
+});
 
 module.exports = router;

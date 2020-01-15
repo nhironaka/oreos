@@ -10,7 +10,7 @@ import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
 
 import _T from 'Services/custom-prop-types';
-import { fetchProblems, selectProblem } from 'Actions/problems';
+import { init, selectProblem } from 'Actions/problems';
 import { selectFetchingProblems, selectProblems, selectSelectedProblem } from 'Selectors/problems';
 import Grid from 'Components/Grid';
 import Button from 'Components/Button';
@@ -103,7 +103,7 @@ class Problems extends React.Component {
   }
 
   componentDidMount() {
-    this.props.fetchProblems();
+    this.props.init();
   }
 
   onSearch = searchText => {
@@ -213,7 +213,7 @@ class Problems extends React.Component {
 Problems.propTypes = {
   loading: T.bool.isRequired,
   problems: T.array.isRequired,
-  fetchProblems: T.func.isRequired,
+  init: T.func.isRequired,
   selectProblem: T.func.isRequired,
   selectedProblem: T.object,
   classes: _T.classes.isRequired,
@@ -226,7 +226,7 @@ const mapStateToProps = createStructuredSelector({
 });
 
 const mapDispatchToProps = {
-  fetchProblems,
+  init,
   selectProblem,
 };
 

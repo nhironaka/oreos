@@ -23,6 +23,7 @@
     "react/require-default-props": "warn",
     "react/sort-comp": "off",
     "import/extensions": "off",
+    "import/prefer-default-export": "off",
     "no-plusplus": "off"
   }
 }

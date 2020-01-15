@@ -1,10 +1,16 @@
-import { takeLatest, call, put, select, all } from 'redux-saga/effects';
+import { takeLatest, takeLeading, call, put, select, all } from 'redux-saga/effects';
 
 import ActionTypes from '../constants/problems';
 import apiRequest from '../services/apiRequest';
 import { setError } from '../reducers/errors';
-import { fetchProblemsSuccess, selectProblem } from '../actions/problems';
+import { fetchProblems as fetchProblemsAction, fetchProblemsSuccess, selectProblem } from '../actions/problems';
+import { fetchFilter } from '../actions/filters';
 import { selectSelectedProblem, selectProblems } from '../selectors/problems';
+
+function* init() {
+  yield put(fetchProblemsAction());
+  yield put(fetchFilter('problem'));
+}
 
 function* fetchProblems() {
   try {
@@ -17,7 +23,7 @@ function* fetchProblems() {
       yield put(selectProblem(rows[0]));
     }
   } catch (error) {
-    yield put(setError(error, 'problems'));
+    yield put(setError(error, 'problem'));
   }
 }
 
@@ -30,7 +36,7 @@ function* updateProblem({ problem }) {
 
     yield all([put(fetchProblemsSuccess(problems)), put(selectProblem(rows[0]))]);
   } catch (error) {
-    yield put(setError(error, 'problems'));
+    yield put(setError(error, 'problem'));
   }
 }
 
@@ -48,6 +54,7 @@ function* addProblem({ problem }) {
 }
 
 export default function* initWatching() {
+  yield takeLeading(ActionTypes.INIT, init);
   yield takeLatest(ActionTypes.FETCH_PROBLEMS, fetchProblems);
   yield takeLatest(ActionTypes.UPDATE_PROBLEM, updateProblem);
   yield takeLatest(ActionTypes.ADD_PROBLEM, addProblem);
