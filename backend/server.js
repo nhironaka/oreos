@@ -3,7 +3,7 @@ const http = require('http');
 
 const app = require('./app');
 
-const port = process.env.PORT || 9000;
+const port = process.env.PORT;
 app.set('port', port);
 const server = http.createServer(app);
 // const io = socketIo(server); // < Interesting!
@@ -11,6 +11,6 @@ const server = http.createServer(app);
 //   console.log('listening');
 // });
 
-server.listen(port);
+server.listen(port, () => console.log(`listening to port ${port}`));
 
 module.exports = server;

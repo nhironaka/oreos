@@ -1,6 +1,8 @@
 const { Pool } = require('pg');
 const env = require('dotenv');
 
+const init = require('../init');
+
 env.config();
 
 const pool = new Pool({
@@ -10,7 +12,7 @@ const pool = new Pool({
   password: process.env.DB_PASS,
   port: process.env.DB_PORT,
 });
-
+init(pool);
 pool.connect();
 
 function executeQuery(sql, callback) {
