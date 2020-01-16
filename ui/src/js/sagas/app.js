@@ -1,12 +1,11 @@
-/**
- * Combined sagas
- */
-import { fork } from 'redux-saga/effects';
+import { takeLeading } from 'redux-saga/effects';
 
-import problems from './problems';
-import filters from './filters';
+import ActionTypes from '../constants/app';
+import apiRequest from '../services/apiRequest';
+import { setError } from '../reducers/errors';
 
-export default function* rootSaga() {
-  yield fork(problems);
-  yield fork(filters);
+function* init() {}
+
+export default function* initWatching() {
+  yield takeLeading(ActionTypes.INIT, init);
 }

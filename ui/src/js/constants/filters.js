@@ -1,4 +1,0 @@
-export default {
-    FETCH_FILTER: 'FETCH_FILTER',
-    FETCH_FILTER_SUCCESS: 'FETCH_FILTER_SUCCESS',
-};

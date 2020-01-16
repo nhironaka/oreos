@@ -4,10 +4,9 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import { ThemeProvider, withStyles } from '@material-ui/styles';
 
 import customPropTypes from 'Services/custom-prop-types';
-import NavBar from 'Components/NavBar';
 import configureStore from '../redux/store';
 import theme from '../constants/theme';
-import Problems from './Problems';
+import Container from './Container';
 
 const styles = () => ({
   root: {
@@ -22,10 +21,9 @@ function App({ classes }) {
     <Provider store={store}>
       <ThemeProvider theme={theme}>
         <BrowserRouter>
-          <NavBar />
           <main className={classes.root}>
             <Switch>
-              <Route path="/" render={() => <Problems />} />
+              <Route path="/" render={() => <Container />} />
             </Switch>
           </main>
         </BrowserRouter>
