@@ -8,8 +8,7 @@ import { fetchFilter } from '../actions/filters';
 import { selectSelectedProblem, selectProblems } from '../selectors/problems';
 
 function* init() {
-  yield put(fetchProblemsAction());
-  yield put(fetchFilter('problem'));
+  yield all([put(fetchProblemsAction()), put(fetchFilter('problem'))]);
 }
 
 function* fetchProblems() {

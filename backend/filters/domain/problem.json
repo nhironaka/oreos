@@ -1,0 +1,53 @@
+[
+  {
+    "id": "title",
+    "label": "Title",
+    "type": {
+      "id": "string",
+      "properties": {
+        "type": "text"
+      }
+    }
+  },
+  {
+    "id": "question",
+    "label": "Question",
+    "type": {
+      "id": "string",
+      "properties": {
+        "type": "text"
+      }
+    }
+  },
+  {
+    "id": "difficulty",
+    "label": "Difficulty",
+    "type": {
+      "id": "singleSelect",
+      "properties": {
+        "data_drive": {
+          "model": "problem_difficulty",
+          "source_type": "database"
+        },
+        "placeholder": "Select problem difficulty",
+        "selected": "all"
+      }
+    }
+  },
+  {
+    "id": "status",
+    "label": "Status",
+    "type": {
+      "id": "singleSelect",
+      "properties": {
+        "type": "text",
+        "data_drive": {
+          "model": "problem_status",
+          "source_type": "database"
+        },
+        "placeholder": "Select problem status",
+        "selected": "all"
+      }
+    }
+  }
+]

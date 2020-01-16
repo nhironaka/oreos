@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 
 import _T from 'Services/custom-prop-types';
 import { init, selectProblem } from 'Actions/problems';
-import { selectFetchingProblems, selectProblems, selectSelectedProblem } from 'Selectors/problems';
+import { selectFetchingProblems, selectProblems, selectSelectedProblem, selectProblemFilter } from 'Selectors/problems';
 import Grid from 'Components/Grid';
 import Button from 'Components/Button';
 import InputField from 'Components/InputField';
@@ -20,6 +20,8 @@ import Typography from 'Components/Typography';
 import Card from 'Components/Card';
 import Loading from 'Components/Loading';
 import Problem from '../Problem';
+import ProblemsFilter from '../ProblemsFilter';
+import ProblemsList from '../ProblemsList';
 
 const styles = theme => ({
   root: {},
@@ -76,29 +78,9 @@ const styles = theme => ({
 class Problems extends React.Component {
   constructor(props) {
     super(props);
-    this.columns = [
-      {
-        label: 'Title',
-        id: 'title',
-        type: {
-          id: 'link',
-          properties: {
-            to: row => ({
-              to: `/problem/${row.id}`,
-            }),
-          },
-        },
-      },
-      {
-        label: 'Question',
-        id: 'question',
-      },
-    ];
-    this.onSearch = debounce(({ target: { value } }) => this.onSearch(value));
+
     this.state = {
-      search: '',
-      filteredList: [],
-      filterOpen: false,
+      filteredList: props.problems,
     };
   }
 
@@ -106,101 +88,18 @@ class Problems extends React.Component {
     this.props.init();
   }
 
-  onSearch = searchText => {
-    const { problems } = this.props;
-    const search = new RegExp(searchText.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'));
+  filterChangeCallback = () => {
 
-    this.setState({
-      search,
-      filteredList: search
-        ? problems.filter(problem => search.test(problem.solution) || search.test(problems.title))
-        : [],
-    });
-  };
-
-  toggleFilter = () => {
-    this.setState(state => ({
-      filterOpen: !state.filterOpen,
-    }));
-  };
+  }
 
   render() {
-    const { loading, problems, selectedProblem, classes } = this.props;
-    const { search, filteredList, filterOpen } = this.state;
-    const list = search ? filteredList : problems;
-    const selectedProblemId = get(selectedProblem, 'id');
+    const { loading, selectedProblem, classes } = this.props;
+    const { filteredList } = this.state;
 
     return (
       <Grid alignItems="stretch" wrap="nowrap" classes={{ root: classes.root }} container>
         <Grid xs={3} sm={4} item>
-          {loading ? (
-            <Loading />
-          ) : (
-            <UnorderedList classes={{ root: classes.unorderedList }}>
-              {problems.length > 0 && (
-                <li>
-                  <Card padding="md" classes={{ root: classes.searchCard }} noBorder>
-                    <div className={classes.primaryFilter}>
-                      <InputField
-                        name="search"
-                        value={search}
-                        onChange={this.onSearch}
-                        adornment={[{ type: 'icon', value: faSearch }]}
-                        FormControlProps={{
-                          fullWidth: true,
-                        }}
-                      />
-                      <Button variant="text" size="small" color="primary" onClick={this.toggleFilter}>
-                        Advanced
-                      </Button>
-                    </div>
-
-                    <Collapse timeout="auto" in={filterOpen} unmountOnExit>
-                      <Typography>Order by</Typography>
-                      <Typography>Filter by</Typography>
-                    </Collapse>
-                  </Card>
-                </li>
-              )}
-              {list.map(problem => (
-                <li key={problem.id}>
-                  <Card
-                    Component="button"
-                    padding="md"
-                    color={problem.id === selectedProblemId ? 'primary' : 'default'}
-                    onClick={() => this.props.selectProblem(problem)}
-                    classes={{ colorPrimary: classes.colorPrimary }}
-                    noBorder
-                  >
-                    <Typography color="inherit" variant="subtitle1">
-                      {problem.title}
-                    </Typography>
-                    <Typography align="left" color="inherit" classes={{ root: classes.question }}>
-                      {problem.question}
-                    </Typography>
-                  </Card>
-                </li>
-              ))}
-              <li>
-                <Card
-                  Component="button"
-                  padding="md"
-                  onClick={() =>
-                    this.props.selectProblem({
-                      status: Problem.PROBLEM_STATUS[0].id,
-                      difficulty: Problem.DIFFICULTY[1].id,
-                    })
-                  }
-                  noBorder
-                >
-                  <Typography variant="subtitle1">
-                    {'Add problem '}
-                    <FontAwesomeIcon icon={faPlus} />
-                  </Typography>
-                </Card>
-              </li>
-            </UnorderedList>
-          )}
+          {loading ? <Loading /> : <ProblemsList problems={filteredList} />}
         </Grid>
         <Grid xs={9} sm={8} classes={{ root: classes.selectedProblemWrapper }} item>
           {selectedProblem && <Problem problem={selectedProblem} key={selectProblem.id} />}
@@ -214,7 +113,6 @@ Problems.propTypes = {
   loading: T.bool.isRequired,
   problems: T.array.isRequired,
   init: T.func.isRequired,
-  selectProblem: T.func.isRequired,
   selectedProblem: T.object,
   classes: _T.classes.isRequired,
 };

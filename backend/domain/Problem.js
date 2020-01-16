@@ -1,15 +1,15 @@
 const moment = require('moment');
 const escape = require('pg-escape');
 
-const { STATUSES, DIFFICULTY } = require('../constants/problem');
+const { PROBLEM_STATUS, PROBLEM_DIFFICULTY } = require('../constants/problem');
 
-function Problem(name, question, title, difficulty, status = STATUSES.ATTEMPTED, solution = '') {
+function Problem(name, question, title, difficulty, status = PROBLEM_STATUS.ATTEMPTED, solution = '') {
   this.name = name;
   this.question = question;
   this.title = title;
   this.solution = solution;
-  this.status = STATUSES[status];
-  this.difficulty = DIFFICULTY[difficulty];
+  this.status = PROBLEM_STATUS[status];
+  this.difficulty = PROBLEM_DIFFICULTY[difficulty];
 
   function getAddProblemSQL() {
     return `INSERT INTO PROBLEM(name, question, solution, status, title, difficulty) \
@@ -35,21 +35,22 @@ function updateProblemByIdSQL(id, problem) {
     sql.push(`title='${problem.title}',`);
   }
   if (problem.status) {
-    if (!STATUSES[problem.status]) {
+    if (!PROBLEM_STATUS[problem.status]) {
       throw new Error(
-        `Problem status must be one of ${STATUSES.ATTEMPTED}, ${STATUSES.SOLVED}. You entered - ${problem.status}`
+        `Problem status must be one of ${PROBLEM_STATUS.ATTEMPTED},
+         ${PROBLEM_STATUS.SOLVED}. You entered - ${problem.status}`
       );
     }
-    sql.push(`status='${STATUSES[problem.status]}',`);
+    sql.push(`status='${PROBLEM_STATUS[problem.status]}',`);
   }
   if (problem.difficulty) {
-    if (!DIFFICULTY[problem.difficulty]) {
+    if (!PROBLEM_DIFFICULTY[problem.difficulty]) {
       throw new Error(
-        `Problem difficulty must be one of ${DIFFICULTY.EASY}, ${DIFFICULTY.MEDIUM}, 
-        ${DIFFICULTY.HARD}. You entered - ${problem.difficulty}`
+        `Problem difficulty must be one of ${PROBLEM_DIFFICULTY.EASY}, ${PROBLEM_DIFFICULTY.MEDIUM}, 
+        ${PROBLEM_DIFFICULTY.HARD}. You entered - ${problem.difficulty}`
       );
     }
-    sql.push(`difficulty='${DIFFICULTY[problem.difficulty]}',`);
+    sql.push(`difficulty='${PROBLEM_DIFFICULTY[problem.difficulty]}',`);
   }
   if (sql.length < 2) {
     throw new Error(`Unable to update problem. Invalid fields - ${Object.values(problem).join(', ')}`);
@@ -68,8 +69,7 @@ function getAllProblemsSQL() {
   return `SELECT * FROM PROBLEM ORDER BY last_updated DESC`;
 }
 
-Problem.filterLocation = './domain/problem.js';
-Problem.STATUSES = STATUSES;
+Problem.PROBLEM_STATUS = PROBLEM_STATUS;
 Problem.deleteProblemByIdSQL = deleteProblemByIdSQL;
 Problem.getProblemByIdSQL = getProblemByIdSQL;
 Problem.updateProblemByIdSQL = updateProblemByIdSQL;

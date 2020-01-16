@@ -5,7 +5,6 @@ import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
 
 import _T from 'Services/custom-prop-types';
-import { fetchProblems, selectProblem } from 'Actions/problems';
 import { selectProblemFilter } from '../../selectors/problems';
 import SelectFilterItem from './selectFilterItem';
 
@@ -22,7 +21,7 @@ function ProblemsFilter({ filters, filterChangeCallback, classes }) {
     <div className={classes.root}>
       {filters.forEach(filter => {
         switch (filter.type.id) {
-          case 'select':
+          case 'singleSelect':
             return <SelectFilterItem filter={filter} filterChangeCallback={filterChangeCallback} />;
           default:
             return null;
@@ -42,9 +41,4 @@ const mapStateToProps = createStructuredSelector({
   filters: selectProblemFilter,
 });
 
-const mapDispatchToProps = {
-  fetchProblems,
-  selectProblem,
-};
-
-export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(ProblemsFilter));
+export default withStyles(styles)(connect(mapStateToProps)(ProblemsFilter));

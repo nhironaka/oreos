@@ -1,15 +1,15 @@
-const STATUSES = {
+const PROBLEM_STATUS = {
     ATTEMPTED: 'ATTEMPTED',
     SOLVED: 'SOLVED',
 };
 
-const DIFFICULTY = {
+const PROBLEM_DIFFICULTY = {
     EASY: 'EASY',
     MEDIUM: 'MEDIUM',
     HARD: 'HARD',
 };
 
 module.exports = {
-    STATUSES,
-    DIFFICULTY
+    PROBLEM_STATUS,
+    PROBLEM_DIFFICULTY
 }

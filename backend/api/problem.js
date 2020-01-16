@@ -2,7 +2,6 @@ const express = require('express');
 
 const db = require('../db/index');
 const Problem = require('../domain/Problem');
-const { readFile } = require('../filters/index');
 
 const router = express.Router();
 
@@ -94,19 +93,6 @@ router.delete('/:problemId', (req, res) => {
       }
     }
   });
-});
-
-// Handles url GET:/problems
-router.get('/filter', async (req, res) => {
-  try {
-    const data = await readFile(Problem.filterLocation);
-    res.status(200).json(data);
-  } catch (e) {
-    res.status(400).json({
-      error: 'Unable to fetch problem filter',
-    })
-  }
-
 });
 
 module.exports = router;

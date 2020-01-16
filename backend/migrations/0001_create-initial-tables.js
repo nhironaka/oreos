@@ -1,14 +1,19 @@
+const { PROBLEM_STATUS, PROBLEM_DIFFICULTY } = require('../constants/problem');
+const { constantToEnumValues } = require('../services/migrationHelper');
+
 // Create enums
 const CREATE_PROBLEM_STATUS_ENUM = `
     DO $$ BEGIN
-        CREATE TYPE PROBLEM_STATUS as ENUM ('ATTEMPTED', 'SOLVED');
+        CREATE TYPE PROBLEM_STATUS as ENUM (
+            ${constantToEnumValues(PROBLEM_STATUS)}
+        );
     EXCEPTION
         WHEN duplicate_object THEN null;
     END $$;
 `;
 const CREATE_DIFFICULTY_ENUM = `
     DO $$ BEGIN
-        CREATE TYPE PROBLEM_DIFFICULTY as ENUM ('EASY', 'MEDIUM', 'HARD');
+        CREATE TYPE PROBLEM_DIFFICULTY as ENUM (${constantToEnumValues(PROBLEM_DIFFICULTY)});
     EXCEPTION
         WHEN duplicate_object THEN null;
     END $$;
@@ -29,7 +34,7 @@ CREATE TABLE IF NOT EXISTS problem (
 );`;
 
 module.exports = {
-  generateSql: () => `
+    generateSql: () => `
         ${CREATE_PROBLEM_STATUS_ENUM}
         ${CREATE_DIFFICULTY_ENUM}
         ${CREATE_PROBLEM_TABLE}

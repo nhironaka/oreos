@@ -39,6 +39,7 @@ export default function reducer(state = initialState, action) {
         inputs: { ...state.inputs, [action.problem]: action.input },
       };
     case FilterActionTypes.FETCH_FILTER_SUCCESS:
+      console.log(action.filters)
       return {
         ...state,
         filters: action.filterType === 'problem' ? action.filters : state.filters,
