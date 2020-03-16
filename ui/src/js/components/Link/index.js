@@ -1,25 +1,12 @@
 import React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
+import T from 'prop-types';
+import RouterLink from 'react-router-dom/Link';
+import Button from '../Button';
 
-import Typography from '../Typography';
-
-const styles = () => ({
-  root: {
-    textDecoration: 'none',
-  },
-});
-
-class Link extends React.Component {
-  render() {
-    const { children, ...rest } = this.props;
-
-    return (
-      <Typography Component={RouterLink} {...rest}>
-        {children}
-      </Typography>
-    );
-  }
+export default function Link({ to, ...rest }) {
+  return <Button variant="text" component={RouterLink} to={to} {...rest} />;
 }
 
-export default withStyles(styles)(Link);
+Link.propTypes = {
+  to: T.oneOfType([T.string, T.object, T.func]).isRequired,
+};

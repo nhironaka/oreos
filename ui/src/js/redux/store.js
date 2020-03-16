@@ -2,8 +2,8 @@ import { applyMiddleware, compose, createStore } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import thunkMiddleware from 'redux-thunk';
 
-import rootReducer from '../reducers/app';
-import rootSaga from '../sagas/app';
+import rootReducer from '../reducers';
+import rootSaga from '../sagas';
 
 export default function configureStore(preloadedState) {
   let initialState = preloadedState;
@@ -19,7 +19,7 @@ export default function configureStore(preloadedState) {
   const store = createStore(rootReducer(), initialState, composedEnhancers);
 
   if (process.env.NODE_ENV !== 'production' && module.hot) {
-    module.hot.accept('../reducers/app', () => store.replaceReducer(rootReducer()));
+    module.hot.accept('../reducers/index', () => store.replaceReducer(rootReducer()));
   }
 
   sagaMiddleware.run(rootSaga);

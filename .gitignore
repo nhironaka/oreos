@@ -1,5 +1,10 @@
 node_modules
-dist
+sessions
+persist-albumcache
+persist-mediaitemcache
+persist-storage
+ui/dist
 .DS_Store
 .vscode
 .env
+.google_application_credentials

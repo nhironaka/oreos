@@ -51,6 +51,11 @@ module.exports = {
       name: false,
     },
   },
+  output: {
+    path: path.resolve(__dirname, 'ui/dist'),
+    filename: '[name].js',
+    publicPath: '/',
+  },
   resolve: {
     enforceExtension: false,
     modules: ['node_modules'],

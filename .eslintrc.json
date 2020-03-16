@@ -1,5 +1,5 @@
 {
-  "extends": ["eslint:recommended", "airbnb", "prettier"],
+  "extends": ["eslint:recommended", "plugin:react/recommended", "airbnb", "airbnb/hooks"],
   "parser": "babel-eslint",
   "parserOptions": {
     "ecmaVersion": 7,
@@ -16,6 +16,9 @@
   },
   "rules": {
     "comma-dangle": ["error", "always-multiline"],
+    "arrow-parens": ["error", "as-needed"],
+    "jsx-quotes": ["error", "prefer-double"],
+    "react/jsx-closing-bracket-location": ["error", "tag-aligned"],
     "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }],
     "react/destructuring-assignment": "off",
     "react/jsx-props-no-spreading": "off",

@@ -1,5 +1,7 @@
 import T from 'prop-types';
 
-export default {
+const _T = {
   classes: T.shape({ root: T.string.isRequired }),
 };
+
+export default _T;

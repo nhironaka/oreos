@@ -1,30 +1,21 @@
 import React from 'react';
 import T from 'prop-types';
-import { withStyles } from '@material-ui/styles';
 import MuiButton from '@material-ui/core/Button';
+import { makeStyles } from '@material-ui/core/styles';
 
-import _T from 'Services/custom-prop-types';
-
-const styles = () => ({
+const useStyles = makeStyles({
   root: {},
-  text: {
-    textTransform: 'none',
-    '& $label': {
-      display: 'inline-flex',
-      flexDirection: 'column',
-      alignItems: 'flex-start',
-    },
-  },
-  label: {},
 });
 
-function Button({ variant, onClick, disableRipple, classes, ...rest }) {
+export default function Button({ variant, color, onClick, classes, ...rest }) {
+  const defaultClasses = useStyles({ classes });
+
   return (
     <MuiButton
       variant={variant}
+      color={color}
       onClick={onClick}
-      disableRipple={disableRipple}
-      classes={{ root: classes.root, text: classes.text, label: classes.label }}
+      classes={{ root: defaultClasses.root }}
       {...rest}
     />
   );
@@ -32,14 +23,13 @@ function Button({ variant, onClick, disableRipple, classes, ...rest }) {
 
 Button.defaultProps = {
   variant: 'outlined',
-  disableRipple: true,
+  color: 'primary',
+  classes: {},
 };
 
 Button.propTypes = {
-  variant: T.oneOf(['text', 'outlined', 'contained']),
+  variant: T.oneOf(['text', 'outlined', 'standard']),
+  color: T.oneOf(['default', 'inherit', 'primary', 'secondary']),
   onClick: T.func.isRequired,
-  disableRipple: T.bool,
-  classes: _T.classes.isRequired,
+  classes: T.object,
 };
-
-export default withStyles(styles)(Button);
