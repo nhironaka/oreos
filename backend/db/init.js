@@ -1,8 +1,10 @@
-const { Client } = require('pg');
-const { createDb, migrate } = require('postgres-migrations');
-const path = require('path');
+import { Client } from 'pg';
+import { createDb, migrate } from 'postgres-migrations';
 
-async function createDatabase(config) {
+import '../migrations/0001_create-initial-tables';
+import config from './config';
+
+async function createDatabase() {
   const client = new Client({
     ...config,
     database: 'postgres',
@@ -24,20 +26,23 @@ async function createDatabase(config) {
   }
 }
 
-async function createMigration(config) {
+async function createMigration() {
   const client = new Client(config);
 
   try {
     await client.connect();
-    await migrate({ client }, path.resolve(__dirname, '../migrations'));
+    await migrate({ client }, './backend/migrations');
+  } catch (e) {
+    await client.end();
+    console.trace(e);
   } finally {
     await client.end();
   }
 }
 
-async function init(dbConfig) {
+export async function init(dbConfig) {
   await createDatabase(dbConfig);
   await createMigration(dbConfig);
 }
 
-module.exports = init;
+(() => init())();

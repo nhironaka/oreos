@@ -4,18 +4,23 @@ import MuiButton from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles({
-  root: {},
+  root: {
+    
+  },
+  label: {
+    whiteSpace: 'nowrap',
+  },
 });
 
 export default function Button({ variant, color, onClick, classes, ...rest }) {
-  const defaultClasses = useStyles({ classes });
+  const baseClasses = useStyles({ classes });
 
   return (
     <MuiButton
       variant={variant}
       color={color}
       onClick={onClick}
-      classes={{ root: defaultClasses.root }}
+      classes={{ root: baseClasses.root, label: baseClasses.label }}
       {...rest}
     />
   );
@@ -24,12 +29,13 @@ export default function Button({ variant, color, onClick, classes, ...rest }) {
 Button.defaultProps = {
   variant: 'outlined',
   color: 'primary',
+  onClick: () => {},
   classes: {},
 };
 
 Button.propTypes = {
   variant: T.oneOf(['text', 'outlined', 'standard']),
   color: T.oneOf(['default', 'inherit', 'primary', 'secondary']),
-  onClick: T.func.isRequired,
+  onClick: T.func,
   classes: T.object,
 };

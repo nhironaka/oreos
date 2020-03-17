@@ -1,42 +1,27 @@
-const { PROBLEM_STATUS, PROBLEM_DIFFICULTY } = require('../constants/problem');
-const { constantToEnumValues } = require('../services/migrationHelper');
-
 // Create enums
-const CREATE_PROBLEM_STATUS_ENUM = `
-    DO $$ BEGIN
-        CREATE TYPE PROBLEM_STATUS as ENUM (
-            ${constantToEnumValues(PROBLEM_STATUS)}
-        );
-    EXCEPTION
-        WHEN duplicate_object THEN null;
-    END $$;
-`;
-const CREATE_DIFFICULTY_ENUM = `
-    DO $$ BEGIN
-        CREATE TYPE PROBLEM_DIFFICULTY as ENUM (${constantToEnumValues(PROBLEM_DIFFICULTY)});
-    EXCEPTION
-        WHEN duplicate_object THEN null;
-    END $$;
-`;
+const CREATE_USER_STATUS_ENUM = `
+DO $$ BEGIN
+  CREATE TYPE USER_STATUS as ENUM ('ACTIVE', 'INACTIVE');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+  END $$;
+  `;
 
 // Create tables
-const CREATE_PROBLEM_TABLE = `
-CREATE TABLE IF NOT EXISTS problem (
-    id INT PRIMARY KEY,
-    name TEXT NOT NULL,
-    title TEXT NOT NULL,
-    question TEXT NOT NULL,
-    solution TEXT,
-    status PROBLEM_STATUS NOT NULL,
-    difficulty PROBLEM_DIFFICULTY NOT NULL,
-    created TIMESTAMP NOT NULL,
-    last_updated TIMESTAMP
-);`;
+const CREATE_USER_TABLE = `
+  CREATE TABLE IF NOT EXISTS "user" (
+    id SERIAL PRIMARY KEY,
+    username varchar(64) UNIQUE NOT NULL,
+    display_name varchar(64) NOT NULL,
+    password varchar(123) NOT NULL,
+    status USER_STATUS NOT NULL,
+    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );`;
 
 module.exports = {
-    generateSql: () => `
-        ${CREATE_PROBLEM_STATUS_ENUM}
-        ${CREATE_DIFFICULTY_ENUM}
-        ${CREATE_PROBLEM_TABLE}
-    `,
+  generateSql: () => `
+    ${CREATE_USER_STATUS_ENUM}
+    ${CREATE_USER_TABLE}
+  `,
 };

@@ -5,7 +5,9 @@ import { Switch, Route, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { selectUser } from '../../selectors/user';
+import { selectUser, selectLoading } from '../../selectors/auth';
+import { init as initAction } from '../../actions/auth';
+import Loading from '../../components/Loading';
 import Auth from '../Auth';
 import Container from '../Container';
 
@@ -18,22 +20,25 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-function Main({ user }) {
+function Main({ user, loading, init }) {
   const classes = useStyles();
+  /* eslint-disable react-hooks/exhaustive-deps */
+  React.useEffect(() => {
+    init();
+  }, []);
+  /* eslint-enable */
 
-  return (
+  return loading ? <Loading classes={{ root: classes.root }} /> : (
     <main className={classes.root}>
       <Switch>
-        <Route exact path="/(login|sign-up)">
-          <Auth />
+        <Route exact path="/(login|signup)">
+          <Auth user={user} />
         </Route>
-        {user.id && (
-          <>
-            <Route exact path="/container" render={() => <Container />} />
-          </>
-        )}
+        <Route exact path="/container">
+          <Container />
+        </Route>
         <Route path="/">
-          <Redirect to={user.id ? '/container' : '/login'} />
+          {user.id ? <Redirect to="/container" /> : <Auth />}
         </Route>
       </Switch>
     </main>
@@ -42,10 +47,17 @@ function Main({ user }) {
 
 Main.propTypes = {
   user: T.object.isRequired,
+  loading: T.bool.isRequired,
+  init: T.func.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
   user: selectUser,
+  loading: selectLoading,
 });
 
-export default connect(mapStateToProps)(Main);
+const mapDispatchToProps = {
+  init: initAction,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Main);

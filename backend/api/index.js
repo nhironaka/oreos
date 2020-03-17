@@ -1,14 +1,15 @@
-const express = require('express');
-const path = require('path');
+import express from 'express';
+import path from 'path';
 
 const router = express.Router();
 
 router.get('/*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../../ui/dist/index.html'), err => {
+  console.log('here', req.session.user);
+  res.sendFile(path.resolve(__dirname, '../../ui/src/index.html'), err => {
     if (err) {
       res.status(500).send(err);
     }
   });
 });
 
-module.exports = router;
+export default router;

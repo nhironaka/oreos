@@ -1,7 +1,6 @@
-const http = require('http');
-// const socketIo = require('socket.io');
-
-const app = require('./app');
+import http from 'http';
+import app from './app';
+// import socketIo from 'socket.io';
 
 const port = process.env.PORT;
 app.set('port', port);
@@ -13,4 +12,4 @@ const server = http.createServer(app);
 
 server.listen(port);
 
-module.exports = server;
+export default server;

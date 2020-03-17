@@ -1,9 +1,7 @@
 node_modules
+build
 sessions
-persist-albumcache
-persist-mediaitemcache
-persist-storage
-ui/dist
+cache
 .DS_Store
 .vscode
 .env

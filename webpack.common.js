@@ -52,7 +52,7 @@ module.exports = {
     },
   },
   output: {
-    path: path.resolve(__dirname, 'ui/dist'),
+    path: path.resolve(__dirname, 'build/ui'),
     filename: '[name].js',
     publicPath: '/',
   },

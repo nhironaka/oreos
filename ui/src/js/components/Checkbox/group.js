@@ -34,21 +34,21 @@ export default function CheckboxGroup({
   onChange,
   classes,
 }) {
-  const defaultClasses = useStyles({ classes });
+  const baseClasses = useStyles({ classes });
 
   return (
     <FormControl
       component="fieldset"
       disabled={disabled}
       error={error}
-      classes={{ root: defaultClasses.root }}
+      classes={{ root: baseClasses.root }}
     >
       <FormLabel
         component="legend"
         classes={{
-          root: defaultClasses.formLabel,
-          error: defaultClasses.formLabelError,
-          disabled: defaultClasses.formLabelDisabled,
+          root: baseClasses.formLabel,
+          error: baseClasses.formLabelError,
+          disabled: baseClasses.formLabelDisabled,
         }}
       >
         {formLabel}
@@ -64,9 +64,9 @@ export default function CheckboxGroup({
       </FormGroup>
       <FormHelperText
         classes={{
-          root: defaultClasses.formHelperText,
-          error: defaultClasses.formHelperTextError,
-          disabled: defaultClasses.formHelperTextDisabled,
+          root: baseClasses.formHelperText,
+          error: baseClasses.formHelperTextError,
+          disabled: baseClasses.formHelperTextDisabled,
         }}
       >
         {formHelperText}
@@ -94,5 +94,5 @@ CheckboxGroup.propTypes = {
   onChange: T.func.isRequired,
   disabled: T.bool,
   error: T.bool,
-  classes: _T.defaultClasses.isRequired,
+  classes: _T.baseClasses.isRequired,
 };

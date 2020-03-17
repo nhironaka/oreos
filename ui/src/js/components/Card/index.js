@@ -17,17 +17,20 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-export default function Card({ variant, padding, classes, ...rest }) {
-  const defaultClasses = useStyles({ classes });
+export default function Card({
+  variant, padding, cardRef, classes, ...rest
+}) {
+  const baseClasses = useStyles({ classes });
 
   return (
     <MuiCard
       variant={variant}
+      ref={cardRef}
       classes={{
-        root: classNames(defaultClasses.root, {
-          [defaultClasses.paddingSm]: padding === 'sm',
-          [defaultClasses.paddingMd]: padding === 'md',
-          [defaultClasses.paddingLg]: padding === 'lg',
+        root: classNames(baseClasses.root, {
+          [baseClasses.paddingSm]: padding === 'sm',
+          [baseClasses.paddingMd]: padding === 'md',
+          [baseClasses.paddingLg]: padding === 'lg',
         }),
       }}
       {...rest}
@@ -37,6 +40,7 @@ export default function Card({ variant, padding, classes, ...rest }) {
 Card.defaultProps = {
   variant: 'outlined',
   padding: 'none',
+  cardRef: null,
   classes: {},
 };
 
@@ -44,4 +48,8 @@ Card.propTypes = {
   variant: T.oneOf(['elevation', 'outlined']),
   padding: T.oneOf(['none', 'sm', 'md', 'lg']),
   classes: T.objectOf(T.string),
+  cardRef: T.oneOfType([
+    T.func,
+    T.shape({ current: T.instanceOf(Element) }),
+  ]),
 };

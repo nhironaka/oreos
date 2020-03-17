@@ -1,136 +1,99 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames';
 import T from 'prop-types';
+import { makeStyles } from '@material-ui/core/styles';
 
-import _T from 'Services/custom-prop-types';
 import Button from '../Button';
+import Card from '../Card';
+import UnorderedList from '../UnorderedList';
+import DropdownOption from './option';
 
-const styles = () => ({
-  root: {},
-});
+const useStyles = makeStyles(theme => ({
+  root: {
+    position: 'relative',
+  },
+  button: {
+    padding: 0,
+    minWidth: 0,
+  },
+  buttonLabel: {
+    width: 'auto',
+  },
+  card: {
+    position: 'absolute',
+    visibility: 'hidden',
+    opacity: 0,
+    transition: 'visibility 0s linear 300ms, opacity 300ms',
+  },
+  open: {
+    visibility: 'visible',
+    opacity: 1,
+    transition: 'visibility 0s linear 300ms, opacity 0s',
+  },
+}));
 
-class Dropdown extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      selected: this.props.defaultSelected,
-      showDropdown: false,
-      loading: false,
-      asyncOptions: [],
-      search: '',
-    };
-  }
-
-  showItems = async () => {
-    const { options } = this.props;
-    const { asyncOptions } = this.state;
-
-    if (options.length || asyncOptions.length) {
-      this.setState(state => ({
-        showDropdown: !state.showDropdown,
-      }));
-    } else {
-      // No options -- fetch
-      this.setState({
-        loading: true,
-      });
-      try {
-        const fetchedOptions = await this.props.fetchItems();
-        this.setState({
-          loading: false,
-          asyncOptions: fetchedOptions,
-        });
-      } catch (e) {
-        this.setState({
-          loading: false,
-          error: e,
-        });
+export default function Dropdown({
+  children,
+  options,
+  render,
+  onClick,
+  multiselect,
+  classes,
+}) {
+  const baseClasses = useStyles({ classes });
+  const [open, toggleOpen] = React.useState(false);
+  const renderCallback = React.useCallback(
+    option => {
+      if (typeof render === 'function') {
+        return render(option);
       }
-    }
-  };
+      return (
+        <DropdownOption
+          key={option.id || option}
+          option={option}
+          onClick={onClick}
+          multiselect={multiselect}
+        />
+      );
+    },
+    [onClick, multiselect, render]
+  );
 
-  updateSearch = e => {
-    this.setState({
-      search: e.target.value,
-    });
-  };
-
-  render() {
-    const { searchable, options, label, classes } = this.props;
-    const { selected, search, loading, asyncOptions } = this.state;
-    const dropdownOptions = options.length ? options : asyncOptions;
-    console.log(asyncOptions, options);
-
-    return (
-      <div className={classes.root}>
-        <Button className={classes.button} onClick={this.showItems}>
-          {label}
-        </Button>
-        <div className={classes.optionsWrapper}>
-          {loading ? (
-            <span className={classes.loading}>Loading</span>
-          ) : (
-            <ol className={classes.options}>
-              {searchable && (
-                <li className={classes.search}>
-                  <input
-                    type="text"
-                    placeholder="search"
-                    value={search}
-                    onChange={this.updateSearch}
-                  />
-                </li>
-              )}
-              {dropdownOptions.length === 0 ? (
-                <span>No results</span>
-              ) : (
-                dropdownOptions.map(option => {
-                  return (
-                    <li key={option.id} className={classes.option}>
-                      <Button
-                        className={classes.selectOption}
-                        onClick={this.selectItem}
-                      >
-                        <label>{option.label}</label>
-                        <input
-                          type="checkbox"
-                          value={selected[option.id]}
-                          onChange={this.selectItemCheckbox}
-                        />
-                      </Button>
-                    </li>
-                  );
-                })
-              )}
-            </ol>
-          )}
-        </div>
-      </div>
-    );
-  }
+  return (
+    <div className={baseClasses.root}>
+      <Button
+        color="inherit"
+        variant="text"
+        classes={{ root: baseClasses.button, label: baseClasses.buttonLabel }}
+        onClick={() => toggleOpen(!open)}
+      >
+        {children}
+      </Button>
+      <Card
+        padding="sm"
+        classes={{ root: baseClasses.card }}
+        className={classNames({
+          [baseClasses.open]: open,
+        })}
+      >
+        <UnorderedList options={options} render={renderCallback} />
+      </Card>
+    </div>
+  );
 }
 
 Dropdown.defaultProps = {
-  defaultSelected: {},
-  options: [],
-  searchable: false,
-  label: '',
-  fetchItems: () => {},
+  classes: {},
+  multiselect: false,
+  render: null,
+  onClick: () => {},
 };
 
 Dropdown.propTypes = {
-  searchable: T.bool,
-  options: T.arrayOf(
-    T.shape({
-      id: T.string,
-      label: T.string,
-    })
-  ),
-  label: T.string,
-  defaultSelected: T.object,
-  fetchItems: T.func,
-  onChange: T.func.isRequired,
-  classes: _T.classes.isRequired,
+  options: T.array.isRequired,
+  multiselect: T.bool,
+  render: T.func,
+  onClick: T.func,
+  children: T.node.isRequired,
+  classes: T.object,
 };
-
-export default withStyles(styles)(Dropdown);

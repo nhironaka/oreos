@@ -6,7 +6,11 @@ import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Input from '@material-ui/core/Input';
 import InputLabel from '@material-ui/core/InputLabel';
+import IconButton from '@material-ui/core/IconButton';
+import InputAdornment from '@material-ui/core/InputAdornment';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
+import VisibilityIcon from '@material-ui/icons/Visibility';
+import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
 import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles({
@@ -50,10 +54,15 @@ export default function InputField({
   error,
   formHelperText,
   onChange,
+  type,
   classes,
   ...rest
 }) {
-  const defaultClasses = useStyles({ classes });
+  const baseClasses = useStyles({ classes });
+  const [inputType, setInputType] = React.useState(type);
+  const togglePassword = React.useCallback(() => {
+    setInputType(inputType === 'password' ? 'text' : 'password');
+  }, [inputType, setInputType]);
   const Component = React.useMemo(() => getInputFieldComponent(variant), [
     variant,
   ]);
@@ -63,47 +72,60 @@ export default function InputField({
       variant={variant}
       disabled={disabled}
       error={error}
-      classes={{ root: defaultClasses.root }}
+      classes={{ root: baseClasses.root }}
     >
-      <InputLabel
-        htmlFor={id}
-        classes={{
-          root: defaultClasses.inputLabel,
-          error: defaultClasses.inputLabelError,
-          disabled: defaultClasses.inputLabelDisabled,
-          filled: defaultClasses.inputLabelFilled,
-          outlined: defaultClasses.inputLabelOutlined,
-        }}
-      >
-        {inputLabel}
-      </InputLabel>
+      {inputLabel && (
+        <InputLabel
+          htmlFor={id}
+          classes={{
+            root: baseClasses.inputLabel,
+            error: baseClasses.inputLabelError,
+            disabled: baseClasses.inputLabelDisabled,
+            filled: baseClasses.inputLabelFilled,
+            outlined: baseClasses.inputLabelOutlined,
+          }}
+        >
+          {inputLabel}
+        </InputLabel>
+      )}
       <Component
         id={id}
         value={value}
+        type={inputType}
         onChange={onChange}
         className={classNames({
-          [defaultClasses.outlinedInput]: variant === 'outlined',
-          [defaultClasses.filledInput]: variant === 'filled',
+          [baseClasses.outlinedInput]: variant === 'outlined',
+          [baseClasses.filledInput]: variant === 'filled',
         })}
-        classes={{ root: defaultClasses.input }}
+        classes={{ root: baseClasses.input }}
+        endAdornment={type === 'password' ? (
+          <InputAdornment position="end">
+            <IconButton size="small" onClick={togglePassword}>
+              {inputType === 'password' ? <VisibilityIcon /> : <VisibilityOffIcon />}
+            </IconButton>
+          </InputAdornment>
+        ) : null}
         {...rest}
       />
-      <FormHelperText
-        classes={{
-          root: defaultClasses.formHelperText,
-          error: defaultClasses.formHelperTextError,
-          disabled: defaultClasses.formHelperTextDisabled,
-          filled: defaultClasses.formHelperTextFilled,
-          contained: defaultClasses.inputLabelContained,
-        }}
-      >
-        {formHelperText}
-      </FormHelperText>
+      {formHelperText && (
+        <FormHelperText
+          classes={{
+            root: baseClasses.formHelperText,
+            error: baseClasses.formHelperTextError,
+            disabled: baseClasses.formHelperTextDisabled,
+            filled: baseClasses.formHelperTextFilled,
+            contained: baseClasses.inputLabelContained,
+          }}
+        >
+          {formHelperText}
+        </FormHelperText>
+      )}
     </FormControl>
   );
 }
 
 InputField.defaultProps = {
+  type: 'text',
   variant: 'standard',
   id: null,
   inputLabel: '',
@@ -113,6 +135,7 @@ InputField.defaultProps = {
 };
 
 InputField.propTypes = {
+  type: T.string,
   variant: T.oneOf(['standard', 'filled', 'outlined']),
   id: T.string,
   inputLabel: T.string,
